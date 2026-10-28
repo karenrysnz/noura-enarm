@@ -72,6 +72,46 @@
   }
 }
 
+/* ENARMIA: ajuste de encabezado y botón Salir en móvil */
+@media (max-width: 650px) {
+  .topbar {
+    height: auto;
+    min-height: 76px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 12px;
+    overflow: visible;
+  }
+
+  .brand {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 15px;
+  }
+
+  .actions {
+    flex: 0 0 auto;
+    margin-left: auto;
+    gap: 6px;
+  }
+
+  #logout {
+    display: inline-flex !important;
+    flex-shrink: 0;
+    padding: 9px 12px;
+    font-size: 13px;
+  }
+
+  .nav {
+    bottom: 0;
+    z-index: 19;
+  }
+
+  body {
+    padding-bottom: calc(100px + env(safe-area-inset-bottom));
+  }
+}
+
 </style>
 </head>
 <body>
