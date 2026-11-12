@@ -159,7 +159,64 @@ z-index: 20;
     padding-bottom: calc(100px + env(safe-area-inset-bottom));
   }
 }
+/* NOURA | ENARM - MENU RESPONSIVE */
+.menu-toggle {
+  display: none;
+  border: 1px solid var(--line);
+  background: white;
+  color: var(--ink);
+  border-radius: 12px;
+  width: 42px;
+  height: 42px;
+  font-size: 22px;
+  align-items: center;
+  justify-content: center;
+}
 
+@media (max-width: 1000px) {
+  .menu-toggle {
+    display: inline-flex !important;
+    flex-shrink: 0;
+  }
+
+  .topbar .nav {
+    display: none !important;
+    position: absolute !important;
+    top: calc(100% + 8px) !important;
+    right: 12px !important;
+    left: auto !important;
+    bottom: auto !important;
+    width: min(280px, calc(100vw - 24px)) !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    height: auto !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    gap: 4px !important;
+    padding: 10px !important;
+    background: white !important;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 14px 40px rgba(0,0,0,.14);
+    overflow: auto !important;
+    z-index: 10001 !important;
+  }
+
+  .topbar .nav.is-open {
+    display: flex !important;
+  }
+
+  .topbar .nav button {
+    width: 100%;
+    text-align: left;
+    padding: 13px 14px;
+    flex: none;
+  }
+
+  .topbar {
+    overflow: visible !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -315,7 +372,12 @@ z-index: 20;
     <button data-view="progress">Mi progreso</button>
     <button data-view="profile">Perfil</button>
   </nav>
-  <div class="actions"><span class="pill" id="userPill"></span><button class="btn secondary" id="logout">Salir</button></div>
+<div class="actions">
+  <button class="menu-toggle" id="menuToggle" type="button"
+    aria-label="Abrir menú" aria-expanded="false">☰</button>
+  <span class="pill" id="userPill"></span>
+  <button class="btn secondary" id="logout">Salir</button>
+</div>
 </header>
 <main class="wrap">
 <section id="homeView">
@@ -463,6 +525,36 @@ function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');set
 function esc(s){return String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\\':'&#92;','"':'&quot;'}[c]))}
 function showView(v){['home','questions','review','materials','flashcards','ai','progress','profile'].forEach(x=>$(x+'View').classList.toggle('hidden',x!==v));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));if(v==='questions')startQuestions();if(v==='review')loadReview();if(v==='materials')loadMaterials();if(v==='flashcards')loadFlashcards();if(v==='progress')renderProgress();if(v==='profile')loadProfileUI()}
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
+  // NOURA | ENARM - CONTROL DEL MENU MOVIL
+const menuToggle = $('menuToggle');
+const mainNav = document.querySelector('.topbar .nav');
+
+function closeMobileMenu() {
+  mainNav.classList.remove('is-open');
+  menuToggle.setAttribute('aria-expanded', 'false');
+  menuToggle.textContent = '☰';
+}
+
+menuToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const isOpen = mainNav.classList.toggle('is-open');
+  menuToggle.setAttribute('aria-expanded', String(isOpen));
+  menuToggle.textContent = isOpen ? '×' : '☰';
+});
+
+mainNav.querySelectorAll('button').forEach(button => {
+  button.addEventListener('click', closeMobileMenu);
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.topbar')) {
+    closeMobileMenu();
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeMobileMenu();
+});
 $('switchBtn').onclick=()=>{isSignup=!isSignup;$('authTitle').textContent=isSignup?'Crea tu cuenta':'Bienvenid@ de vuelta';$('authSubtitle').textContent=isSignup?'Empieza a construir tu historial ENARM.':'Entra para continuar tu preparación.';$('nameField').classList.toggle('hidden',!isSignup);$('name').required=isSignup;$('authBtn').textContent=isSignup?'Crear cuenta':'Iniciar sesión';$('switchText').textContent=isSignup?'¿Ya tienes cuenta?':'¿Primera vez en NOURA | ENARM?';$('switchBtn').textContent=isSignup?'Iniciar sesión':'Crear cuenta'};
 $('authForm').addEventListener('submit',async e=>{e.preventDefault();const email=$('email').value.trim(),password=$('password').value,name=$('name').value.trim();if(isSignup){const {data,error}=await db.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:window.location.origin+window.location.pathname}});if(error)return toast(error.message);if(!data.session)toast('Revisa tu correo para confirmar la cuenta.');else await boot()}else{const {error}=await db.auth.signInWithPassword({email,password});if(error)return toast(error.message);await boot()}});
 $('logout').onclick=async()=>{await db.auth.signOut();location.reload()};
