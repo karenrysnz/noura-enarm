@@ -451,6 +451,7 @@ z-index: 20;
     <button data-view="ai">IA</button>
     <button data-view="progress">Mi progreso</button>
     <button data-view="profile">Perfil</button>
+    <button class="hidden" id="adminNavButton" type="button">Administración</button>
   </nav>
 <div class="actions">
   <button class="menu-toggle" id="menuToggle" type="button"
@@ -1038,9 +1039,19 @@ function renderFlashcards() {
 
 async function checkNouraAdmin(){
   const {data,error}=await db.from('app_admins').select('user_id').eq('user_id',currentUser.id).maybeSingle();
-  isNouraAdmin=!error&&!!data;
+  if(error){
+    console.error('NOURA: no se pudo verificar el permiso de administradora en app_admins:',error);
+    isNouraAdmin=false;
+    $('adminNavButton').classList.add('hidden');
+    $('fcAdminToggle').classList.add('hidden');
+    fcAdminMode=false;
+    return {ok:false,error};
+  }
+  isNouraAdmin=!!data;
+  $('adminNavButton').classList.toggle('hidden',!isNouraAdmin);
   $('fcAdminToggle').classList.toggle('hidden',!isNouraAdmin);
   if(!isNouraAdmin)fcAdminMode=false;
+  return {ok:true,isAdmin:isNouraAdmin};
 }
 async function loadFlashcardImageUrls(){
   const images=fcMaterials.filter(m=>m.image_path);
@@ -1058,6 +1069,12 @@ function setFcAdminMode(enabled){
   if(enabled)loadAdminPublished();
 }
 $('fcAdminToggle').addEventListener('click',()=>setFcAdminMode(!fcAdminMode));
+$('adminNavButton').addEventListener('click',()=>{
+  if(!isNouraAdmin)return toast('No se pudo confirmar el permiso de administradora en Supabase.');
+  showView('flashcards');
+  setFcAdminMode(true);
+  closeMobileMenu();
+});
 $('fcStudentMode').addEventListener('click',()=>setFcAdminMode(false));
 function fcSpecialtyOptions(selected){
   return ['Medicina Interna','Cirugía General','Ginecología y Obstetricia','Pediatría'].map(x=>`<option ${x===selected?'selected':''}>${x}</option>`).join('');
