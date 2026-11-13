@@ -572,69 +572,199 @@ async function submitQuestion(idx,card){if(answeredThisBatch.has(idx))return;con
 $('nextBatchBtn').onclick=()=>{if($('nextBatchBtn').disabled)return;if(currentIndex+3<questions.length){currentIndex+=3;renderQuestionBatch();window.scrollTo({top:0,behavior:'smooth'})}else{toast('Sesión completada ✦');showView('home')}};
 async function loadReview(){const {data:wrong}=await db.from('attempt_answers').select('question_id,is_correct,answered_at').eq('is_correct',false).order('answered_at',{ascending:false}).limit(12);if(!wrong?.length){$('reviewList').innerHTML='<div class="card empty">Aún no tienes errores para repasar. Sigue practicando y aquí aparecerán.</div>';return}const ids=[...new Set(wrong.map(x=>x.question_id))];const {data:qs}=await db.from('questions').select('id,stem,pearl,topic_id,topics(name,specialties(name))').in('id',ids);$('reviewList').innerHTML=(qs||[]).map(q=>`<div class="card"><div class="meta"><span class="tag">${esc(q.topics?.specialties?.name||'ENARM')}</span><span class="tag">${esc(q.topics?.name||'Tema')}</span></div><h3 class="title" style="font-size:24px;margin:8px 0">Repasa este caso</h3><p style="line-height:1.6">${esc(q.stem)}</p>${q.pearl?`<p class="mini"><strong style="color:var(--gold)">Perla ENARM:</strong> ${esc(q.pearl)}</p>`:''}</div>`).join('')}
 
-// Flashcards: use saved study_materials; categorize by explicit title prefixes or collection tags.
+
+// Flashcards: materiales y favoritos sincronizados con Supabase.
 let fcMaterials = [];
 let fcCollection = 'originales';
-const fcFavKey = 'noura_enarm_flashcard_favorites_v1';
-function fcGetFavorites(){try{return JSON.parse(localStorage.getItem(fcFavKey)||'[]')}catch{return []}}
-function fcSetFavorites(ids){try{localStorage.setItem(fcFavKey,JSON.stringify(ids))}catch{}}
-function fcId(m){return String(m.id ?? `${m.title||''}|${m.created_at||''}`)}
-function fcCategory(m){
-  const label = `${m.collection||''} ${m.category||''} ${m.material_type||''} ${m.title||''}`.toLowerCase();
-  if(label.includes('tips dra. karen') || label.includes('tips dra karen') || label.includes('[tips]') || label.includes('tips-karen')) return 'tips';
-  if(label.includes('flashcard') || label.includes('original') || label.includes('biblioteca noura')) return 'originales';
+let fcFavorites = [];
+
+function fcGetFavorites() {
+  return fcFavorites;
+}
+
+function fcId(m) {
+  return String(m.id);
+}
+
+function fcCategory(m) {
+  const label = `${m.collection || ''} ${m.category || ''} ${m.material_type || ''} ${m.title || ''}`.toLowerCase();
+  if (label.includes('tips dra. karen') || label.includes('tips dra karen') || label.includes('[tips]') || label.includes('tips-karen')) return 'tips';
+  if (label.includes('flashcard') || label.includes('original') || label.includes('biblioteca noura')) return 'originales';
   return 'otros';
 }
-async function loadFlashcards(){
-  const status=$('fcStatus'), host=$('fcList');
-  status.textContent='Cargando tus materiales…';
-  const {data,error}=await db.from('study_materials').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
-  if(error){status.textContent='No fue posible cargar los materiales. Revisa los permisos de study_materials en Supabase.';host.innerHTML='';return}
-  fcMaterials=(data||[]).filter(m=>String(m.material_type||'').toLowerCase().includes('flashcard') || /\\[tips\\]|tips dra\\.? karen|biblioteca noura|original/i.test(String(m.title||'')) || String(m.collection||'').toLowerCase().includes('flashcard'));
+
+async function loadFlashcardFavorites() {
+  const { data, error } = await db
+    .from('flashcard_favorites')
+    .select('flashcard_id')
+    .eq('user_id', currentUser.id);
+
+  if (error) {
+    console.error('Error cargando favoritos:', error);
+    toast('No fue posible cargar tus favoritos.');
+    fcFavorites = [];
+    return;
+  }
+
+  fcFavorites = (data || []).map(row => String(row.flashcard_id));
+}
+
+async function loadFlashcards() {
+  const status = $('fcStatus');
+  const host = $('fcList');
+  status.textContent = 'Cargando tus materiales…';
+
+  const { data, error } = await db
+    .from('study_materials')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    status.textContent = 'No fue posible cargar los materiales. Revisa los permisos de study_materials en Supabase.';
+    host.innerHTML = '';
+    return;
+  }
+
+  fcMaterials = (data || []).filter(m =>
+    String(m.material_type || '').toLowerCase().includes('flashcard') ||
+    /\[tips\]|tips dra\.? karen|biblioteca noura|original/i.test(String(m.title || '')) ||
+    String(m.collection || '').toLowerCase().includes('flashcard')
+  );
+
+  await loadFlashcardFavorites();
   renderFlashcards();
 }
-function renderFlashcards(){
-  const host=$('fcList'), status=$('fcStatus'), q=($('fcSearch').value||'').trim().toLowerCase();
-  const favs=fcGetFavorites();
-  let list=fcMaterials.filter(m=>{
-    const cat=fcCategory(m);
-    if(fcCollection==='favoritos') return favs.includes(fcId(m));
-    if(fcCollection==='tips') return cat==='tips';
-    return cat==='originales';
-  }).filter(m=>!q||`${m.title||''} ${m.content||''} ${m.topic||''}`.toLowerCase().includes(q));
-  status.textContent=`${list.length} ficha${list.length===1?'':'s'} · ${fcCollection==='originales'?'Biblioteca NOURA | ENARM':fcCollection==='tips'?'Tips Dra. Karen':'Tus favoritos'}`;
-  $('fcEmpty').classList.toggle('hidden',list.length>0);
-  $('fcEmptyTitle').textContent=fcCollection==='favoritos'?'Aún no tienes favoritos.':'Esta colección todavía no tiene fichas.';
-  $('fcEmptyText').textContent=fcCollection==='originales'
-    ? 'Aquí aparecerán las fichas originales autorizadas para la biblioteca NOURA | ENARM. Los materiales generados desde tu cuenta no se publican automáticamente en esta colección.'
-    : fcCollection==='tips'
-      ? 'Aquí aparecerán las fichas propias de Tips Dra. Karen. Para clasificarlas, el título debe comenzar con “[Tips]” o incluir “Tips Dra. Karen”.'
+
+async function toggleFlashcardFavorite(id) {
+  const isFavorite = fcGetFavorites().includes(id);
+
+  if (isFavorite) {
+    const { error } = await db
+      .from('flashcard_favorites')
+      .delete()
+      .eq('user_id', currentUser.id)
+      .eq('flashcard_id', id);
+
+    if (error) {
+      console.error(error);
+      toast('No se pudo quitar de favoritos.');
+      return;
+    }
+
+    fcFavorites = fcFavorites.filter(x => x !== id);
+  } else {
+    const { error } = await db
+      .from('flashcard_favorites')
+      .insert({
+        user_id: currentUser.id,
+        flashcard_id: id
+      });
+
+    if (error) {
+      console.error(error);
+      toast('No se pudo guardar el favorito.');
+      return;
+    }
+
+    fcFavorites = [...fcFavorites, id];
+  }
+
+  renderFlashcards();
+}
+
+function renderFlashcards() {
+  const host = $('fcList');
+  const status = $('fcStatus');
+  const q = ($('fcSearch').value || '').trim().toLowerCase();
+  const favs = fcGetFavorites();
+
+  let list = fcMaterials.filter(m => {
+    const cat = fcCategory(m);
+    if (fcCollection === 'favoritos') return favs.includes(fcId(m));
+    if (fcCollection === 'tips') return cat === 'tips';
+    return cat === 'originales';
+  }).filter(m =>
+    !q || `${m.title || ''} ${m.content || ''} ${m.topic || ''}`.toLowerCase().includes(q)
+  );
+
+  status.textContent = `${list.length} ficha${list.length === 1 ? '' : 's'} · ${fcCollection === 'originales' ? 'Biblioteca NOURA | ENARM' : fcCollection === 'tips' ? 'Tips Dra. Karen' : 'Tus favoritos'}`;
+
+  $('fcEmpty').classList.toggle('hidden', list.length > 0);
+  $('fcEmptyTitle').textContent = fcCollection === 'favoritos' ? 'Aún no tienes favoritos.' : 'Esta colección todavía no tiene fichas.';
+  $('fcEmptyText').textContent = fcCollection === 'originales'
+    ? 'Aquí aparecerán las fichas originales autorizadas para la biblioteca NOURA | ENARM.'
+    : fcCollection === 'tips'
+      ? 'Aquí aparecerán las fichas propias de Tips Dra. Karen.'
       : 'Pulsa la estrella de cualquier ficha para guardarla aquí.';
-  host.innerHTML=list.map(m=>{
-    const id=fcId(m), fav=favs.includes(id), title=esc(m.title||'Flashcard');
-    const content=String(m.content||'Sin contenido guardado.');
-    const answer=esc(content.length>1800?content.slice(0,1800)+'…':content);
-    const category=fcCategory(m)==='tips'?'Tips Dra. Karen':'Biblioteca NOURA | ENARM';
+
+  host.innerHTML = list.map(m => {
+    const id = fcId(m);
+    const fav = favs.includes(id);
+    const title = esc(m.title || 'Flashcard');
+    const content = String(m.content || 'Sin contenido guardado.');
+    const answer = esc(content.length > 1800 ? content.slice(0, 1800) + '…' : content);
+    const category = fcCategory(m) === 'tips' ? 'Tips Dra. Karen' : 'Biblioteca NOURA | ENARM';
+
     return `<article class="card fc-card" tabindex="0" role="button" aria-label="Voltear flashcard: ${title}" data-fc-id="${esc(id)}">
-      <div class="fc-card-top"><span class="fc-collection-label">${category}</span><button type="button" class="fc-fav ${fav?'is-favorite':''}" aria-label="${fav?'Quitar de favoritos':'Agregar a favoritos'}" aria-pressed="${fav}" data-fc-fav="${esc(id)}">${fav?'★':'☆'}</button></div>
-      <div class="fc-card-body"><h3>${title}</h3><div class="fc-answer hidden">${answer}</div><div class="fc-card-foot">Pulsa la ficha para revelar el contenido</div></div>
+      <div class="fc-card-top">
+        <span class="fc-collection-label">${category}</span>
+        <button type="button" class="fc-fav ${fav ? 'is-favorite' : ''}" aria-label="${fav ? 'Quitar de favoritos' : 'Agregar a favoritos'}" aria-pressed="${fav}" data-fc-fav="${esc(id)}">${fav ? '★' : '☆'}</button>
+      </div>
+      <div class="fc-card-body">
+        <h3>${title}</h3>
+        <div class="fc-answer hidden">${answer}</div>
+        <div class="fc-card-foot">Pulsa la ficha para revelar el contenido</div>
+      </div>
     </article>`;
   }).join('');
-  host.querySelectorAll('.fc-card').forEach(card=>{
-    const flip=()=>{card.classList.toggle('is-flipped');const ans=card.querySelector('.fc-answer');ans.classList.toggle('hidden');card.querySelector('.fc-card-foot').textContent=card.classList.contains('is-flipped')?'Pulsa de nuevo para ocultar':'Pulsa la ficha para revelar el contenido'};
-    card.addEventListener('click',e=>{if(e.target.closest('[data-fc-fav]'))return;flip()});
-    card.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target===card){e.preventDefault();flip()}});
+
+  host.querySelectorAll('.fc-card').forEach(card => {
+    const flip = () => {
+      card.classList.toggle('is-flipped');
+      const ans = card.querySelector('.fc-answer');
+      ans.classList.toggle('hidden');
+      card.querySelector('.fc-card-foot').textContent = card.classList.contains('is-flipped')
+        ? 'Pulsa de nuevo para ocultar'
+        : 'Pulsa la ficha para revelar el contenido';
+    };
+
+    card.addEventListener('click', e => {
+      if (e.target.closest('[data-fc-fav]')) return;
+      flip();
+    });
+
+    card.addEventListener('keydown', e => {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target === card) {
+        e.preventDefault();
+        flip();
+      }
+    });
   });
-  host.querySelectorAll('[data-fc-fav]').forEach(btn=>btn.addEventListener('click',e=>{
-    e.stopPropagation();const id=btn.dataset.fcFav;const current=fcGetFavorites();const next=current.includes(id)?current.filter(x=>x!==id):[...current,id];fcSetFavorites(next);renderFlashcards();
-  }));
+
+  host.querySelectorAll('[data-fc-fav]').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      btn.disabled = true;
+      await toggleFlashcardFavorite(btn.dataset.fcFav);
+    });
+  });
 }
-document.addEventListener('input',e=>{if(e.target?.id==='fcSearch')renderFlashcards()});
-document.querySelectorAll('[data-fc-collection]').forEach(btn=>btn.addEventListener('click',()=>{
-  fcCollection=btn.dataset.fcCollection;
-  document.querySelectorAll('[data-fc-collection]').forEach(b=>b.classList.toggle('active',b===btn));
-  renderFlashcards();
-}));
+
+document.addEventListener('input', e => {
+  if (e.target?.id === 'fcSearch') renderFlashcards();
+});
+
+document.querySelectorAll('[data-fc-collection]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    fcCollection = btn.dataset.fcCollection;
+    document.querySelectorAll('[data-fc-collection]').forEach(b =>
+      b.classList.toggle('active', b === btn)
+    );
+    renderFlashcards();
+  });
+});
+
 
 async function loadMaterials(){const {data,error}=await db.from('study_materials').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});if(error){$('materialsList').innerHTML='<div class="card empty">Aún no está habilitado el almacenamiento de materiales.</div>';return}$('materialsList').innerHTML=(data||[]).length?(data||[]).map(m=>`<div class="card material-card"><span class="tag">${esc(m.material_type)}</span><h3>${esc(m.title)}</h3><p>${esc((m.content||'').slice(0,180))}${(m.content||'').length>180?'…':''}</p><div class="mini">${new Date(m.created_at).toLocaleDateString('es-MX')}</div></div>`).join(''):'<div class="card empty">Todavía no tienes materiales. Pídele a NOURA | ENARM que cree el primero.</div>'}
 
