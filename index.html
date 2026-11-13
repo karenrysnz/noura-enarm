@@ -292,6 +292,16 @@ z-index: 20;
 .fc-admin-item .filename{font-size:11px;overflow-wrap:anywhere;margin-top:6px}
 .fc-admin-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .fc-image{width:100%;max-height:520px;object-fit:contain;border-radius:12px;background:#f7f4ee}
+/* Visor ampliado de imágenes de flashcards */
+.fc-image{cursor:zoom-in;transition:transform .18s ease}
+.fc-image:hover{filter:brightness(.98)}
+.fc-image-hint{font-size:11px;color:var(--muted);margin:0}
+.fc-lightbox{position:fixed;inset:0;z-index:9999;background:rgba(12,10,8,.92);display:none;align-items:center;justify-content:center;padding:28px}
+.fc-lightbox.open{display:flex}
+.fc-lightbox img{display:block;max-width:96vw;max-height:91vh;width:auto;height:auto;object-fit:contain;border-radius:10px;box-shadow:0 20px 80px rgba(0,0,0,.45);cursor:zoom-out}
+.fc-lightbox-close{position:absolute;top:16px;right:18px;width:44px;height:44px;border:1px solid rgba(255,255,255,.35);border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:28px;line-height:1;cursor:pointer}
+.fc-lightbox-title{position:absolute;left:20px;top:22px;color:#fff;font-size:13px;max-width:calc(100vw - 100px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:620px){.fc-lightbox{padding:12px}.fc-lightbox img{max-width:98vw;max-height:88vh}.fc-lightbox-title{top:16px;left:12px}}
 .fc-subfolder{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
 .fc-subfolder button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:12px}
 .fc-subfolder button.active{background:#191713;color:#fff;border-color:#191713}
@@ -998,7 +1008,7 @@ function renderFlashcards() {
       </div>
       <div class="fc-card-body">
         <h3>${title}</h3>
-        <div class="fc-answer hidden">${m.image_path ? (fcImageUrls[id] ? `<img class="fc-image" src="${esc(fcImageUrls[id])}" alt="${title}" loading="lazy">` : `<p class="mini">No se pudo obtener la imagen. Revisa los permisos de almacenamiento.</p>`) : answer}</div>
+        <div class="fc-answer hidden">${m.image_path ? (fcImageUrls[id] ? `<img class="fc-image" src="${esc(fcImageUrls[id])}" alt="${title}" loading="lazy"><p class="fc-image-hint">Toca la imagen para verla en grande</p>` : `<p class="mini">No se pudo obtener la imagen. Revisa los permisos de almacenamiento.</p>`) : answer}</div>
         <div class="fc-card-foot">${esc(m.specialty||'')} · Pulsa la ficha para revelar el contenido</div>
       </div>
     </article>`;
@@ -1015,8 +1025,15 @@ function renderFlashcards() {
     };
 
     card.addEventListener('click', e => {
-      if (e.target.closest('[data-fc-fav]')) return;
+      if (e.target.closest('[data-fc-fav]') || e.target.closest('.fc-image')) return;
       flip();
+    });
+
+    const cardImage = card.querySelector('.fc-image');
+    if (cardImage) cardImage.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      openFlashcardImage(cardImage.src, cardImage.alt);
     });
 
     card.addEventListener('keydown', e => {
@@ -1222,6 +1239,32 @@ function renderObSummary(){const learns=[...obState.learning].map(x=>({preguntas
 function startOnboarding(){obStep=0;bindObChoices();showObStep(0);renderObLoad();renderObDate()}
 async function finishOnboarding(){const file=obState.calendarFile;let calendarPath=null;if(file){const clean=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');calendarPath=`${currentUser.id}/${Date.now()}-${clean}`;const {error}=await db.storage.from('course-calendars').upload(calendarPath,file,{upsert:true,contentType:file.type||undefined});if(error)return toast('No pude subir el calendario: '+error.message)}const patch={onboarding_completed:true,exam_date:obState.examDate||null,target_specialty:obState.targetSpecialty||null,communication_style:obState.tone,preferred_name:obState.preferredName||null,preferred_address:obState.preferredAddress,daily_goal:obState.questionGoal,topic_goal:obState.topicGoal,available_minutes:obState.minutes,days_per_week:obState.days,preferred_study_time:obState.time,learning_preferences:[...obState.learning],focus_topics:(obState.focusTopics||'').split(',').map(s=>s.trim()).filter(Boolean),focus_mode:obState.focusMode,current_level:obState.currentLevel,course_calendar_name:file?.name||null,course_calendar_path:calendarPath,updated_at:new Date().toISOString()};const {data,error}=await db.from('profiles').update(patch).eq('id',currentUser.id).select().single();if(error){toast(error.message);return}profile=data;$('onboardingView').classList.add('hidden');$('appView').classList.remove('hidden');await loadDashboard();toast('Tu NOURA | ENARM quedó configurada ✦')}
 $('obBack').onclick=()=>showObStep(obStep-1);$('obSkip').onclick=()=>{showObStep(7)};$('obNext').onclick=()=>{if(obStep<7){if(obStep===1){obState.examDate=$('obExamDate').value;obState.targetSpecialty=$('obTargetSpecialty').value;obState.currentLevel=$('obCurrentLevel').value}if(obStep===2){obState.minutes=Math.max(15,Number($('obMinutes').value||90));obState.days=Number($('obDays').value||6);obState.time=document.querySelector('#obTimeChoices .choice.active')?.dataset.time||'mañana'}if(obStep===3){obState.questionGoal=Math.max(5,Number($('obQuestionGoal').value||30));obState.topicGoal=Number($('obTopicGoal').value||1)}if(obStep===5){obState.focusTopics=$('obFocusTopics').value;obState.focusMode=$('obFocusMode').value}showObStep(obStep+1)}else finishOnboarding()};$('obDays').addEventListener('change',()=>obState.days=Number($('obDays').value||6));
+
+// Visor modal para ampliar imágenes de la biblioteca.
+const fcLightbox = document.createElement('div');
+fcLightbox.className = 'fc-lightbox';
+fcLightbox.id = 'fcLightbox';
+fcLightbox.setAttribute('role','dialog');
+fcLightbox.setAttribute('aria-modal','true');
+fcLightbox.setAttribute('aria-label','Imagen ampliada');
+fcLightbox.innerHTML = `<div class="fc-lightbox-title" id="fcLightboxTitle"></div><button type="button" class="fc-lightbox-close" id="fcLightboxClose" aria-label="Cerrar imagen">×</button><img id="fcLightboxImage" alt="Imagen ampliada">`;
+document.body.appendChild(fcLightbox);
+function openFlashcardImage(src, title='') {
+  const img = document.getElementById('fcLightboxImage');
+  img.src = src; img.alt = title || 'Imagen ampliada';
+  document.getElementById('fcLightboxTitle').textContent = title;
+  fcLightbox.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('fcLightboxClose').focus();
+}
+function closeFlashcardImage() {
+  fcLightbox.classList.remove('open');
+  document.body.style.overflow = '';
+  document.getElementById('fcLightboxImage').src = '';
+}
+document.getElementById('fcLightboxClose').addEventListener('click', closeFlashcardImage);
+fcLightbox.addEventListener('click', e => { if (e.target === fcLightbox || e.target.id === 'fcLightboxImage') closeFlashcardImage(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && fcLightbox.classList.contains('open')) closeFlashcardImage(); });
 
 boot();
 db.auth.onAuthStateChange((event,session)=>{
