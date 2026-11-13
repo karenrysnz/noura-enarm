@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>NOURA | ENARM</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 :root{--ink:#11110f;--muted:#706c65;--soft:#f5f1e9;--cream:#fbf9f5;--gold:#b7852f;--gold2:#d7b36a;--line:#e7e0d4;--card:#fff;--green:#20885f;--red:#bf5050;--shadow:0 14px 46px rgba(31,24,14,.075);--r:22px}
 *{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}.topbar{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.9);backdrop-filter:blur(16px);position:sticky;top:0;z-index:20}.brand{font-weight:900;letter-spacing:.16em;font-size:19px}.brand small{display:block;font-size:8px;color:var(--gold);letter-spacing:.18em;margin-top:2px}.brand-symbol{color:#111!important;font-weight:900;letter-spacing:0;margin:0 2px}.nav{display:flex;gap:5px}.nav button{border:0;background:transparent;border-radius:14px;padding:10px 13px;color:#666}.nav button.active,.nav button:hover{background:var(--soft);color:#111}.actions{display:flex;gap:9px;align-items:center}.pill{border:1px solid var(--line);border-radius:999px;padding:9px 13px;background:#fff;color:#5f5b55;font-size:13px}.wrap{max-width:1280px;margin:auto;padding:30px 26px 70px}.grid{display:grid;gap:18px}.btn{border:0;border-radius:13px;padding:12px 17px;background:linear-gradient(135deg,#c0923e,#a87524);color:white;font-weight:800;box-shadow:0 10px 24px rgba(183,133,47,.18)}.btn.secondary{background:#fff;color:#111;border:1px solid var(--line);box-shadow:none}.btn.ghost{background:transparent;color:#111;border:1px solid var(--line);box-shadow:none}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px}.eyebrow{text-transform:uppercase;letter-spacing:.17em;font-size:10px;font-weight:900;color:var(--gold)}.title{font-family:Georgia,serif;font-weight:500;letter-spacing:-.02em}.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:24px;align-items:stretch}.hero h1{font-size:58px;line-height:1;margin:10px 0 12px}.hero p{max-width:760px;color:#625e56;line-height:1.65;font-size:16px}.hero .cta{display:flex;gap:9px;margin-top:20px}.mission{background:linear-gradient(145deg,#1a1814,#2a251e);color:#fff;padding:26px;border-radius:28px;position:relative;overflow:hidden;min-height:270px}.mission:after{content:"";position:absolute;width:190px;height:190px;border-radius:50%;background:rgba(215,179,106,.12);right:-50px;top:-65px}.mission h3{font:500 27px Georgia,serif;margin:10px 0 7px;max-width:300px;position:relative;z-index:1}.mission p{color:#ded8ce;line-height:1.5;max-width:320px;position:relative;z-index:1}.mission .tag{display:inline-block;background:rgba(255,255,255,.09);padding:6px 9px;border-radius:999px;font-size:11px;position:relative;z-index:1}.mission .btn{position:relative;z-index:1;margin-top:10px}.stats{grid-template-columns:repeat(4,1fr);margin-top:21px}.stat .label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#7d786f}.stat .num{font-size:30px;font-weight:900;margin-top:6px}.section-head{display:flex;justify-content:space-between;align-items:end;margin:38px 0 15px}.section-head h2{font:500 31px Georgia,serif;margin:0}.section-head p{margin:3px 0 0;color:#7d786f}.dashboard-grid{grid-template-columns:1.22fr .78fr}.today-list{display:flex;flex-direction:column;gap:10px}.today-item{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--line)}.today-item:last-child{border-bottom:0}.numdot{width:29px;height:29px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-size:12px;font-weight:900;color:var(--gold);flex:none}.specialty-list{display:flex;flex-direction:column;gap:13px}.spec-row{display:grid;grid-template-columns:155px 1fr 46px;gap:10px;align-items:center;font-size:13px}.bar{height:9px;background:#ece7de;border-radius:999px;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));border-radius:999px}.spec-pct{text-align:right;font-weight:800}.weak{color:var(--red)}.good{color:var(--green)}.mini{font-size:12px;color:#777;line-height:1.5}.feature-grid{grid-template-columns:repeat(3,1fr)}.feature h3{margin:9px 0 6px}.feature p{color:#6f6a62;line-height:1.55;font-size:13px}.questions-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start}.question-card{width:100%}.question-card .meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}.question-card .stem{font:500 22px/1.42 Georgia,serif}.question-card .stem p{margin:0 0 9px}.option{width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:13px;padding:12px 13px;margin:8px 0;transition:.18s;font-size:13px;line-height:1.45}.option:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.05)}.option.selected{background:#fcf7ed;border-color:var(--gold)}.option.correct{background:#effaf5;border-color:#9bd9be}.option.wrong{background:#fff0f0;border-color:#e1aaaa}.option:disabled{cursor:default;opacity:1}.key{display:inline-grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#f0ece3;font-size:10px;font-weight:900;margin-right:7px;vertical-align:middle}.feedback{margin-top:15px;border-radius:15px;padding:14px;border:1px solid var(--line)}.feedback.good{background:#effaf5;border-color:#c5e9d6}.feedback.bad{background:#fff2f2;border-color:#efd0d0}.feedback h3{margin:0 0 7px}.feedback .explain{color:#555;line-height:1.55;font-size:13px}.question-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}.batch-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px}.batch-status{color:#6f6a62;font-size:13px}.batch-status strong{color:#171511}@media(max-width:1100px){.questions-grid{grid-template-columns:1fr 1fr}}@media(max-width:760px){.questions-grid{grid-template-columns:1fr}}.progress-layout{grid-template-columns:1fr 1fr}.profile-grid{grid-template-columns:1fr 1fr}.field{margin:13px 0}.field label{display:block;font-size:12px;font-weight:800;color:#5f5b55;margin-bottom:6px}.field input,.field textarea,.field select{width:100%;border:1px solid #dcd5ca;background:#fff;border-radius:12px;padding:12px 13px;outline:none}.field textarea{min-height:140px;resize:vertical}.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.choice{border:1px solid var(--line);border-radius:13px;padding:12px;background:#fff;text-align:left}.choice.active{border-color:var(--gold);background:#fcf7ed}.chat{height:430px;display:flex;flex-direction:column}.messages{flex:1;overflow:auto;padding:4px 2px 8px}.bubble{max-width:78%;padding:13px 14px;border-radius:16px;margin:8px 0;line-height:1.55;font-size:13px}.bubble.ai{background:var(--soft)}.bubble.me{margin-left:auto;background:#171512;color:#fff}.chatbar{display:flex;gap:8px}.chatbar input{flex:1;border:1px solid var(--line);border-radius:13px;padding:12px}.material-grid{grid-template-columns:repeat(3,1fr)}.material-card h3{margin:8px 0 5px}.material-card p{color:#6d685f;font-size:13px;line-height:1.5}.empty{padding:34px;text-align:center;color:#777}.auth{min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at 15% 10%,#fff 0,#fbf9f5 44%,#ede5d7 100%);padding:24px}.auth-card{width:min(430px,100%);background:#fff;border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);padding:32px}.auth-card h1{font:500 37px Georgia,serif;margin:27px 0 7px}.auth-card p{color:#777;line-height:1.5}.toast{position:fixed;bottom:23px;right:23px;background:#111;color:#fff;padding:12px 14px;border-radius:12px;opacity:0;transform:translateY(12px);transition:.2s;z-index:50}.toast.show{opacity:1;transform:none}.subtle{color:#7b766f;font-size:13px}.danger{color:var(--red)}
@@ -277,6 +278,24 @@ z-index: 20;
 @media(max-width:650px){.spec-row.spec-click{grid-template-columns:minmax(0,1fr) minmax(65px,.8fr) 40px;padding:12px;}.spec-row .spec-name{font-size:13px}.inline-topic-detail{margin-left:7px;padding:11px}.topic-line{grid-template-columns:25px minmax(0,1fr);}.topic-line>.topic-status{grid-column:2;text-align:left;}}
 
 @media(max-width:650px){.topic-line{grid-template-columns:25px minmax(0,1fr)}.topic-status{grid-column:2;text-align:left}}
+
+
+/* NOURA admin library */
+.auth{visibility:hidden}body.auth-ready #authView{visibility:visible}
+#fcAdminPanel{margin:0 0 18px}
+.fc-admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fc-admin-preview{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px;margin-top:14px}
+.fc-admin-item{border:1px solid var(--line);border-radius:14px;padding:9px;background:#fff;min-width:0}
+.fc-admin-item img{width:100%;height:115px;object-fit:contain;background:#f7f4ee;border-radius:9px}
+.fc-admin-item .field{margin:7px 0 0}
+.fc-admin-item select{padding:8px;font-size:11px}
+.fc-admin-item .filename{font-size:11px;overflow-wrap:anywhere;margin-top:6px}
+.fc-admin-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fc-image{width:100%;max-height:520px;object-fit:contain;border-radius:12px;background:#f7f4ee}
+.fc-subfolder{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.fc-subfolder button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:12px}
+.fc-subfolder button.active{background:#191713;color:#fff;border-color:#191713}
+@media(max-width:620px){.fc-admin-grid{grid-template-columns:1fr}.fc-admin-preview{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 </style>
 </head>
@@ -551,7 +570,31 @@ z-index: 20;
 <section id="flashcardsView" class="hidden">
   <div class="section-head">
     <div><h2>Flashcards NOURA | ENARM</h2><p>Recuerda primero, revela después. Busca por tema y guarda tus fichas favoritas.</p></div>
-    <button class="btn secondary" data-view="materials">Crear flashcards con IA →</button>
+    <div class="fc-admin-actions">
+      <button class="btn secondary" data-view="materials">Crear flashcards con IA →</button>
+      <button class="btn hidden" id="fcAdminToggle" type="button">Administrar biblioteca</button>
+    </div>
+  </div>
+  <div id="fcAdminPanel" class="card hidden">
+    <div class="fc-admin-actions" style="justify-content:space-between">
+      <div><div class="eyebrow">Panel privado · NOURA</div><h3 class="title" style="font-size:25px;margin:7px 0">Carga masiva de imágenes</h3><p class="subtle">Selecciona imágenes o un ZIP. Puedes asignar una clasificación general y corregir cada imagen individualmente.</p></div>
+      <button class="btn secondary" id="fcStudentMode" type="button">Volver a vista de estudiante</button>
+    </div>
+    <div class="fc-admin-grid">
+      <div class="field"><label for="fcAdminFiles">Imágenes o archivo ZIP</label><input id="fcAdminFiles" type="file" accept="image/png,image/jpeg,image/webp,.zip" multiple></div>
+      <div class="field"><label for="fcAdminCollection">Colección para el lote</label><select id="fcAdminCollection"><option value="originales">Biblioteca NOURA | ENARM</option><option value="tips">Tips Dra. Karen</option></select></div>
+      <div class="field"><label for="fcAdminSpecialty">Especialidad para el lote</label><select id="fcAdminSpecialty"><option value="Medicina Interna">Medicina Interna</option><option value="Cirugía General">Cirugía General</option><option value="Ginecología y Obstetricia">Ginecología y Obstetricia</option><option value="Pediatría">Pediatría</option></select></div>
+      <div class="field"><label for="fcAdminOrder">Orden inicial</label><select id="fcAdminOrder"><option value="0">Conservar orden de selección</option><option value="1">Orden alfabético</option></select></div>
+    </div>
+    <div class="fc-admin-actions">
+      <button class="btn secondary" id="fcApplyBatch" type="button">Aplicar clasificación a todas</button>
+      <button class="btn secondary" id="fcClearQueue" type="button">Vaciar selección</button>
+      <button class="btn" id="fcPublishBatch" type="button" disabled>Publicar imágenes</button>
+      <span class="subtle" id="fcUploadStatus" aria-live="polite">Aún no has seleccionado imágenes.</span>
+    </div>
+    <div id="fcAdminPreview" class="fc-admin-preview"></div>
+    <div class="section-head" style="margin-top:24px"><div><h3 style="margin:0">Material publicado</h3><p>Modifica la colección o especialidad de cada imagen.</p></div></div>
+    <div id="fcAdminPublished" class="grid"></div>
   </div>
   <div class="card fc-toolbar">
     <div class="field"><label for="fcSearch">Buscar flashcards</label><input id="fcSearch" type="search" placeholder="Busca tema, pregunta o palabra clave…"></div>
@@ -559,6 +602,13 @@ z-index: 20;
       <button type="button" class="fc-tab active" data-fc-collection="originales">Biblioteca NOURA | ENARM</button>
       <button type="button" class="fc-tab" data-fc-collection="tips">Tips Dra. Karen</button>
       <button type="button" class="fc-tab" data-fc-collection="favoritos">★ Favoritos</button>
+    </div>
+    <div class="fc-subfolder" id="fcSpecialtyTabs" aria-label="Carpetas por especialidad">
+      <button type="button" class="active" data-fc-specialty="Todas">Todas</button>
+      <button type="button" data-fc-specialty="Cirugía General">Cirugía General</button>
+      <button type="button" data-fc-specialty="Ginecología y Obstetricia">Ginecología y Obstetricia</button>
+      <button type="button" data-fc-specialty="Medicina Interna">Medicina Interna</button>
+      <button type="button" data-fc-specialty="Pediatría">Pediatría</button>
     </div>
     <p id="fcStatus" class="mini">Tus colecciones aparecerán aquí.</p>
   </div>
@@ -619,6 +669,7 @@ const SUPABASE_PUBLISHABLE_KEY='sb_publishable_E457c6ZdXMIn16I9Ne-uXw_dC61enHU';
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const $=id=>document.getElementById(id);
 let isSignup=false,currentUser=null,questions=[],currentIndex=0,selectedOption=null,attemptId=null,profile=null,specialtyStats=[];
+let isNouraAdmin=false,fcAdminMode=false,fcUploadQueue=[],fcImageUrls={};
 const TONES=['Claro y directo','Amable y motivador','Exigente tipo tutor','Breve y al grano'];
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800)}
 function esc(s){return String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\\':'&#92;','"':'&quot;'}[c]))}
@@ -657,7 +708,24 @@ document.addEventListener('keydown', (e) => {
 $('switchBtn').onclick=()=>{isSignup=!isSignup;$('authTitle').textContent=isSignup?'Crea tu cuenta':'Bienvenid@ de vuelta';$('authSubtitle').textContent=isSignup?'Empieza a construir tu historial ENARM.':'Entra para continuar tu preparación.';$('nameField').classList.toggle('hidden',!isSignup);$('name').required=isSignup;$('authBtn').textContent=isSignup?'Crear cuenta':'Iniciar sesión';$('switchText').textContent=isSignup?'¿Ya tienes cuenta?':'¿Primera vez en NOURA | ENARM?';$('switchBtn').textContent=isSignup?'Iniciar sesión':'Crear cuenta'};
 $('authForm').addEventListener('submit',async e=>{e.preventDefault();const email=$('email').value.trim(),password=$('password').value,name=$('name').value.trim();if(isSignup){const {data,error}=await db.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:window.location.origin+window.location.pathname}});if(error)return toast(error.message);if(!data.session)toast('Revisa tu correo para confirmar la cuenta.');else await boot()}else{const {error}=await db.auth.signInWithPassword({email,password});if(error)return toast(error.message);await boot()}});
 $('logout').onclick=async()=>{await db.auth.signOut();location.reload()};
-async function boot(){const {data:{user}}=await db.auth.getUser();if(!user){$('authView').classList.remove('hidden');$('appView').classList.add('hidden');$('onboardingView').classList.add('hidden');return}currentUser=user;$('authView').classList.add('hidden');$('userPill').textContent=user.user_metadata?.full_name||user.email;await loadProfile();if(!profile.onboarding_completed){$('appView').classList.add('hidden');$('onboardingView').classList.remove('hidden');startOnboarding();}else{$('onboardingView').classList.add('hidden');$('appView').classList.remove('hidden');await loadDashboard()}}
+let bootInProgress=false;
+async function boot(){
+  if(bootInProgress)return;
+  bootInProgress=true;
+  try{
+    const {data:{user},error}=await db.auth.getUser();
+    if(error)console.warn('No se pudo recuperar la sesión:',error);
+    document.body.classList.add('auth-ready');
+    if(!user){currentUser=null;isNouraAdmin=false;$('authView').classList.remove('hidden');$('appView').classList.add('hidden');$('onboardingView').classList.add('hidden');return}
+    currentUser=user;
+    $('authView').classList.add('hidden');
+    $('userPill').textContent=user.user_metadata?.full_name||user.email;
+    await checkNouraAdmin();
+    await loadProfile();
+    if(!profile.onboarding_completed){$('appView').classList.add('hidden');$('onboardingView').classList.remove('hidden');startOnboarding();}
+    else{$('onboardingView').classList.add('hidden');$('appView').classList.remove('hidden');await loadDashboard();}
+  } finally {bootInProgress=false;document.body.classList.add('auth-ready');}
+}
 async function loadProfile(){const {data}=await db.from('profiles').select('*').eq('id',currentUser.id).maybeSingle();profile=data||{daily_goal:40,topic_goal:1,communication_style:'Claro y directo',onboarding_completed:false,available_minutes:90,days_per_week:6,learning_preferences:['preguntas'],focus_mode:'errores',focus_topics:[],study_days:[],active_days:[],preferred_study_time:'mañana'};$('statGoal').textContent=profile.daily_goal||40;await registerActivityDay();renderIdentityDashboard();}
 function localDay(){const d=new Date();return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Mexico_City',year:'numeric',month:'2-digit',day:'2-digit'}).format(d)}
 async function persistDayList(field){const today=localDay();const arr=Array.isArray(profile?.[field])?[...profile[field]]:[];if(arr.includes(today))return true;arr.push(today);const {error}=await db.from('profiles').update({[field]:arr,updated_at:new Date().toISOString()}).eq('id',currentUser.id);if(error){console.error('No se pudo guardar '+field,error);toast(field==='active_days'?'No se pudo guardar tu día activo. Revisa tu conexión.':'No se pudo guardar tu día estudiado. Revisa tu conexión.');return false;}profile={...profile,[field]:arr};return true;}
@@ -784,6 +852,7 @@ async function loadReview(){const {data:wrong}=await db.from('attempt_answers').
 // Flashcards: materiales y favoritos sincronizados con Supabase.
 let fcMaterials = [];
 let fcCollection = 'originales';
+let fcSpecialtyFilter = 'Todas';
 let fcFavorites = [];
 
 function fcGetFavorites() {
@@ -795,7 +864,10 @@ function fcId(m) {
 }
 
 function fcCategory(m) {
-  const label = `${m.collection || ''} ${m.category || ''} ${m.material_type || ''} ${m.title || ''}`.toLowerCase();
+  const collection=String(m.collection||'').toLowerCase();
+  if(collection==='tips'||collection.includes('tips dra. karen')||collection.includes('tips dra karen'))return 'tips';
+  if(collection==='originales'||collection.includes('biblioteca noura'))return 'originales';
+  const label = `${m.category || ''} ${m.material_type || ''} ${m.title || ''}`.toLowerCase();
   if (label.includes('tips dra. karen') || label.includes('tips dra karen') || label.includes('[tips]') || label.includes('tips-karen')) return 'tips';
   if (label.includes('flashcard') || label.includes('original') || label.includes('biblioteca noura')) return 'originales';
   return 'otros';
@@ -825,7 +897,6 @@ async function loadFlashcards() {
   const { data, error } = await db
     .from('study_materials')
     .select('*')
-    .eq('user_id', currentUser.id)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -835,10 +906,14 @@ async function loadFlashcards() {
   }
 
   fcMaterials = (data || []).filter(m =>
-    String(m.material_type || '').toLowerCase().includes('flashcard') ||
-    /\[tips\]|tips dra\.? karen|biblioteca noura|original/i.test(String(m.title || '')) ||
-    String(m.collection || '').toLowerCase().includes('flashcard')
+    m.is_public === true ||
+    (m.user_id === currentUser.id && (
+      String(m.material_type || '').toLowerCase().includes('flashcard') ||
+      /\[tips\]|tips dra\.? karen|biblioteca noura|original/i.test(String(m.title || '')) ||
+      String(m.collection || '').toLowerCase().includes('flashcard')
+    ))
   );
+  await loadFlashcardImageUrls();
 
   await loadFlashcardFavorites();
   renderFlashcards();
@@ -893,7 +968,8 @@ function renderFlashcards() {
     if (fcCollection === 'tips') return cat === 'tips';
     return cat === 'originales';
   }).filter(m =>
-    !q || `${m.title || ''} ${m.content || ''} ${m.topic || ''}`.toLowerCase().includes(q)
+    (fcSpecialtyFilter === 'Todas' || m.specialty === fcSpecialtyFilter) &&
+    (!q || `${m.title || ''} ${m.content || ''} ${m.topic || ''} ${m.specialty || ''}`.toLowerCase().includes(q))
   );
 
   status.textContent = `${list.length} ficha${list.length === 1 ? '' : 's'} · ${fcCollection === 'originales' ? 'Biblioteca NOURA | ENARM' : fcCollection === 'tips' ? 'Tips Dra. Karen' : 'Tus favoritos'}`;
@@ -921,8 +997,8 @@ function renderFlashcards() {
       </div>
       <div class="fc-card-body">
         <h3>${title}</h3>
-        <div class="fc-answer hidden">${answer}</div>
-        <div class="fc-card-foot">Pulsa la ficha para revelar el contenido</div>
+        <div class="fc-answer hidden">${m.image_path ? (fcImageUrls[id] ? `<img class="fc-image" src="${esc(fcImageUrls[id])}" alt="${title}" loading="lazy">` : `<p class="mini">No se pudo obtener la imagen. Revisa los permisos de almacenamiento.</p>`) : answer}</div>
+        <div class="fc-card-foot">${esc(m.specialty||'')} · Pulsa la ficha para revelar el contenido</div>
       </div>
     </article>`;
   }).join('');
@@ -959,10 +1035,140 @@ function renderFlashcards() {
   });
 }
 
+
+async function checkNouraAdmin(){
+  const {data,error}=await db.from('app_admins').select('user_id').eq('user_id',currentUser.id).maybeSingle();
+  isNouraAdmin=!error&&!!data;
+  $('fcAdminToggle').classList.toggle('hidden',!isNouraAdmin);
+  if(!isNouraAdmin)fcAdminMode=false;
+}
+async function loadFlashcardImageUrls(){
+  const images=fcMaterials.filter(m=>m.image_path);
+  await Promise.all(images.map(async m=>{
+    const id=fcId(m);if(fcImageUrls[id])return;
+    const {data,error}=await db.storage.from('noura-flashcards').createSignedUrl(m.image_path,3600);
+    if(!error&&data?.signedUrl)fcImageUrls[id]=data.signedUrl;
+  }));
+}
+function setFcAdminMode(enabled){
+  if(!isNouraAdmin)return toast('Esta cuenta no tiene permisos de administración.');
+  fcAdminMode=enabled;
+  $('fcAdminPanel').classList.toggle('hidden',!enabled);
+  $('fcAdminToggle').textContent=enabled?'Cerrar administración':'Administrar biblioteca';
+  if(enabled)loadAdminPublished();
+}
+$('fcAdminToggle').addEventListener('click',()=>setFcAdminMode(!fcAdminMode));
+$('fcStudentMode').addEventListener('click',()=>setFcAdminMode(false));
+function fcSpecialtyOptions(selected){
+  return ['Medicina Interna','Cirugía General','Ginecología y Obstetricia','Pediatría'].map(x=>`<option ${x===selected?'selected':''}>${x}</option>`).join('');
+}
+function fcCollectionOptions(selected){
+  return `<option value="originales" ${selected==='originales'?'selected':''}>Biblioteca NOURA | ENARM</option><option value="tips" ${selected==='tips'?'selected':''}>Tips Dra. Karen</option>`;
+}
+function renderFcUploadQueue(){
+  const host=$('fcAdminPreview');host.innerHTML=fcUploadQueue.map((item,i)=>`<div class="fc-admin-item">
+    <img src="${item.preview}" alt="${esc(item.file.name)}">
+    <div class="filename">${esc(item.file.name)}</div>
+    <div class="field"><label>Colección</label><select data-q-collection="${i}">${fcCollectionOptions(item.collection)}</select></div>
+    <div class="field"><label>Especialidad</label><select data-q-specialty="${i}">${fcSpecialtyOptions(item.specialty)}</select></div>
+    <button class="btn ghost" type="button" data-q-remove="${i}" style="width:100%;margin-top:8px">Quitar</button>
+  </div>`).join('');
+  $('fcPublishBatch').disabled=!fcUploadQueue.length;
+  $('fcUploadStatus').textContent=fcUploadQueue.length?`${fcUploadQueue.length} imagen(es) listas para publicar.`:'Aún no has seleccionado imágenes.';
+}
+async function addImageFiles(files){
+  const accepted=[];
+  for(const file of files){
+    if(file.type?.startsWith('image/'))accepted.push(file);
+    else if(file.name.toLowerCase().endsWith('.zip')){
+      if(!window.JSZip){toast('No se pudo cargar el lector ZIP. Recarga la página e inténtalo de nuevo.');continue;}
+      try{
+        const zip=await JSZip.loadAsync(file);
+        const entries=Object.values(zip.files).filter(x=>!x.dir&&/\.(png|jpe?g|webp)$/i.test(x.name));
+        for(const entry of entries){
+          const blob=await entry.async('blob');const type=/\.png$/i.test(entry.name)?'image/png':/\.webp$/i.test(entry.name)?'image/webp':'image/jpeg';
+          accepted.push(new File([blob],entry.name.split('/').pop(),{type}));
+        }
+      }catch(err){console.error(err);toast('No pude leer el ZIP: '+file.name);}
+    }
+  }
+  if(fcUploadQueue.length+accepted.length>500){toast('El límite por lote es de 500 imágenes. Divide la carga en varios lotes.');return;}
+  const collection=$('fcAdminCollection').value,specialty=$('fcAdminSpecialty').value;
+  accepted.forEach(file=>fcUploadQueue.push({file,collection,specialty,preview:URL.createObjectURL(file)}));
+  if($('fcAdminOrder').value==='1')fcUploadQueue.sort((a,b)=>a.file.name.localeCompare(b.file.name,'es'));
+  renderFcUploadQueue();
+}
+$('fcAdminFiles').addEventListener('change',async e=>{await addImageFiles([...e.target.files||[]]);e.target.value='';});
+$('fcApplyBatch').addEventListener('click',()=>{
+  const collection=$('fcAdminCollection').value,specialty=$('fcAdminSpecialty').value;
+  fcUploadQueue=fcUploadQueue.map(x=>({...x,collection,specialty}));renderFcUploadQueue();
+});
+$('fcClearQueue').addEventListener('click',()=>{fcUploadQueue.forEach(x=>URL.revokeObjectURL(x.preview));fcUploadQueue=[];renderFcUploadQueue();});
+$('fcAdminPreview').addEventListener('change',e=>{
+  const c=e.target.closest('[data-q-collection]'),sp=e.target.closest('[data-q-specialty]');
+  if(c&&fcUploadQueue[Number(c.dataset.qCollection)])fcUploadQueue[Number(c.dataset.qCollection)].collection=c.value;
+  if(sp&&fcUploadQueue[Number(sp.dataset.qSpecialty)])fcUploadQueue[Number(sp.dataset.qSpecialty)].specialty=sp.value;
+});
+$('fcAdminPreview').addEventListener('click',e=>{
+  const b=e.target.closest('[data-q-remove]');if(!b)return;
+  const i=Number(b.dataset.qRemove);URL.revokeObjectURL(fcUploadQueue[i].preview);fcUploadQueue.splice(i,1);renderFcUploadQueue();
+});
+$('fcPublishBatch').addEventListener('click',async()=>{
+  if(!isNouraAdmin||!fcUploadQueue.length)return;
+  const btn=$('fcPublishBatch');btn.disabled=true;let ok=0,failed=[];
+  for(let i=0;i<fcUploadQueue.length;i++){
+    const item=fcUploadQueue[i];$('fcUploadStatus').textContent=`Subiendo ${i+1} de ${fcUploadQueue.length}…`;
+    const safe=item.file.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]/g,'_').slice(-100);
+    const path=`${currentUser.id}/${Date.now()}-${i}-${safe}`;
+    const {error:upErr}=await db.storage.from('noura-flashcards').upload(path,item.file,{upsert:false,contentType:item.file.type||'image/jpeg'});
+    if(upErr){failed.push(item.file.name+': '+upErr.message);continue;}
+    const {error:dbErr}=await db.from('study_materials').insert({
+      user_id:currentUser.id,title:item.file.name,material_type:'flashcard_image',content:'',
+      is_public:true,collection:item.collection,specialty:item.specialty,image_path:path,sort_order:i
+    });
+    if(dbErr){failed.push(item.file.name+': '+dbErr.message);await db.storage.from('noura-flashcards').remove([path]);continue;}
+    ok++;
+  }
+  fcUploadQueue.forEach(x=>URL.revokeObjectURL(x.preview));
+  fcUploadQueue=[];renderFcUploadQueue();
+  $('fcUploadStatus').textContent=`Publicadas ${ok} de ${ok+failed.length}.`;
+  if(failed.length)toast(`${failed.length} archivo(s) no se publicaron. Revisa consola.`);
+  else toast(`${ok} imágenes publicadas correctamente.`);
+  await loadFlashcards();await loadAdminPublished();btn.disabled=false;
+});
+async function loadAdminPublished(){
+  if(!isNouraAdmin)return;
+  const host=$('fcAdminPublished');host.innerHTML='<p class="subtle">Cargando publicaciones…</p>';
+  const {data,error}=await db.from('study_materials').select('id,title,collection,specialty,image_path,sort_order').eq('is_public',true).order('sort_order');
+  if(error){host.textContent='No fue posible cargar las publicaciones: '+error.message;return;}
+  host.innerHTML=(data||[]).map(m=>`<div class="fc-admin-item" data-pub-id="${esc(m.id)}">
+    <strong>${esc(m.title)}</strong>
+    <div class="fc-admin-grid">
+      <div class="field"><label>Colección</label><select data-pub-collection>${fcCollectionOptions(m.collection)}</select></div>
+      <div class="field"><label>Especialidad</label><select data-pub-specialty>${fcSpecialtyOptions(m.specialty)}</select></div>
+    </div>
+    <button class="btn secondary" type="button" data-pub-save="${esc(m.id)}">Guardar clasificación</button>
+  </div>`).join('')||'<p class="subtle">Todavía no hay imágenes publicadas.</p>';
+}
+$('fcAdminPublished').addEventListener('click',async e=>{
+  const btn=e.target.closest('[data-pub-save]');if(!btn)return;
+  const row=btn.closest('[data-pub-id]');btn.disabled=true;
+  const {error}=await db.from('study_materials').update({collection:row.querySelector('[data-pub-collection]').value,specialty:row.querySelector('[data-pub-specialty]').value}).eq('id',btn.dataset.pubSave);
+  btn.disabled=false;if(error)toast('No se pudo actualizar: '+error.message);else toast('Clasificación actualizada.');
+  await loadFlashcards();
+});
+
 document.addEventListener('input', e => {
   if (e.target?.id === 'fcSearch') renderFlashcards();
 });
 
+document.querySelectorAll('[data-fc-specialty]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    fcSpecialtyFilter=btn.dataset.fcSpecialty;
+    document.querySelectorAll('[data-fc-specialty]').forEach(b=>b.classList.toggle('active',b===btn));
+    renderFlashcards();
+  });
+});
 document.querySelectorAll('[data-fc-collection]').forEach(btn => {
   btn.addEventListener('click', () => {
     fcCollection = btn.dataset.fcCollection;
@@ -1001,7 +1207,11 @@ function startOnboarding(){obStep=0;bindObChoices();showObStep(0);renderObLoad()
 async function finishOnboarding(){const file=obState.calendarFile;let calendarPath=null;if(file){const clean=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');calendarPath=`${currentUser.id}/${Date.now()}-${clean}`;const {error}=await db.storage.from('course-calendars').upload(calendarPath,file,{upsert:true,contentType:file.type||undefined});if(error)return toast('No pude subir el calendario: '+error.message)}const patch={onboarding_completed:true,exam_date:obState.examDate||null,target_specialty:obState.targetSpecialty||null,communication_style:obState.tone,preferred_name:obState.preferredName||null,preferred_address:obState.preferredAddress,daily_goal:obState.questionGoal,topic_goal:obState.topicGoal,available_minutes:obState.minutes,days_per_week:obState.days,preferred_study_time:obState.time,learning_preferences:[...obState.learning],focus_topics:(obState.focusTopics||'').split(',').map(s=>s.trim()).filter(Boolean),focus_mode:obState.focusMode,current_level:obState.currentLevel,course_calendar_name:file?.name||null,course_calendar_path:calendarPath,updated_at:new Date().toISOString()};const {data,error}=await db.from('profiles').update(patch).eq('id',currentUser.id).select().single();if(error){toast(error.message);return}profile=data;$('onboardingView').classList.add('hidden');$('appView').classList.remove('hidden');await loadDashboard();toast('Tu NOURA | ENARM quedó configurada ✦')}
 $('obBack').onclick=()=>showObStep(obStep-1);$('obSkip').onclick=()=>{showObStep(7)};$('obNext').onclick=()=>{if(obStep<7){if(obStep===1){obState.examDate=$('obExamDate').value;obState.targetSpecialty=$('obTargetSpecialty').value;obState.currentLevel=$('obCurrentLevel').value}if(obStep===2){obState.minutes=Math.max(15,Number($('obMinutes').value||90));obState.days=Number($('obDays').value||6);obState.time=document.querySelector('#obTimeChoices .choice.active')?.dataset.time||'mañana'}if(obStep===3){obState.questionGoal=Math.max(5,Number($('obQuestionGoal').value||30));obState.topicGoal=Number($('obTopicGoal').value||1)}if(obStep===5){obState.focusTopics=$('obFocusTopics').value;obState.focusMode=$('obFocusMode').value}showObStep(obStep+1)}else finishOnboarding()};$('obDays').addEventListener('change',()=>obState.days=Number($('obDays').value||6));
 
-boot();db.auth.onAuthStateChange(e=>{if(e==='SIGNED_IN')boot()});
+boot();
+db.auth.onAuthStateChange((event,session)=>{
+  if(event==='SIGNED_IN' && session?.user && !currentUser) boot();
+  if(event==='SIGNED_OUT'){currentUser=null;isNouraAdmin=false;location.reload();}
+});
 </script>
 </body>
 </html>
