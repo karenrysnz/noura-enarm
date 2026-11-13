@@ -340,6 +340,14 @@ z-index: 20;
 .sim-review-box .sim-pearl{margin-top:14px}
 .sim-review-box .sim-pearl strong{color:#8b641b}
 .sim-review-box .sim-pearl-star{color:#d5a126;font-size:18px;margin-right:5px;vertical-align:-1px}
+
+/* Ajustes de jerarquía visual solicitados: resultados junto al buscador y etiquetas legibles. */
+.material-search-results{margin:12px 0 18px;border-top:0!important;padding-top:0!important}
+.material-search-results #materialFolderTitle{margin-bottom:10px}
+.material-search-results .material-grid{grid-template-columns:1fr}
+#simulatorResults .meta{display:flex!important;flex-wrap:wrap;align-items:center;gap:10px 12px!important;margin:0 0 16px!important}
+#simulatorResults .meta .tag{display:inline-flex;align-items:center;margin:0 4px 4px 0;padding:7px 11px;line-height:1.35;white-space:normal}
+#simulatorResults .meta .tag + .tag{margin-left:2px}
 </style>
 </head>
 <body>
@@ -490,10 +498,10 @@ z-index: 20;
     <button data-view="progress">Mi progreso</button>
     <button data-view="questions">Simuladores</button>
     <button data-view="review">Repaso</button>
+    <button data-view="ai">IA</button>
     <button data-view="materials">Materiales</button>
     <button data-view="flashcards">Flashcards</button>
     <button data-view="profile">Perfil</button>
-    <button data-view="ai">IA</button>
     <button id="adminNavButton" class="hidden" type="button">Administradora</button>
   </nav>
 <div class="actions">
@@ -615,6 +623,7 @@ z-index: 20;
     <div class="card materials-library">
       <div class="eyebrow">Biblioteca organizada</div><h3 class="title" style="font-size:27px;margin:8px 0">Tus materiales</h3>
       <div class="field"><label for="materialSearch">Buscar material</label><input id="materialSearch" placeholder="Buscar por tema o contenido..."></div>
+      <div class="material-folder-results material-search-results"><div class="eyebrow" id="materialFolderTitle">Todos los materiales</div><div id="materialsList" class="grid material-grid"></div></div>
       <div id="materialFolders" class="material-folders">
         <button class="material-folder active" data-material-folder="Todos"><span>▦</span><strong>Todos los materiales</strong><small id="folderCountAll">0 recursos</small></button>
         <button class="material-folder" data-material-folder="Resumen de alto rendimiento"><span>▤</span><strong>Resúmenes</strong><small>Resumen de alto rendimiento</small></button>
@@ -624,7 +633,6 @@ z-index: 20;
         <button class="material-folder" data-material-folder="Checklist ENARM"><span>☑</span><strong>Checklists ENARM</strong><small>Puntos clave</small></button>
         <button class="material-folder" data-material-folder="Mini repaso de errores"><span>↻</span><strong>Mini repaso de errores</strong><small>Refuerza tus fallos</small></button>
       </div>
-      <div class="material-folder-results"><div class="eyebrow" id="materialFolderTitle">Todos los materiales</div><div id="materialsList" class="grid material-grid"></div></div>
     </div>
   </div>
 </section>
