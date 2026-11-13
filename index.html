@@ -261,6 +261,21 @@ z-index: 20;
 .topic-progress span{display:block;height:100%;border-radius:999px;background:#aaa;}
 .topic-progress .status-red{background:#c64f4f}.topic-progress .status-yellow{background:#d6a52f}.topic-progress .status-green{background:#23966b}
 .topic-detail-note{font-size:11px;color:#777;line-height:1.5;}
+/* Pulido visual del diagnóstico: estado bajo el nombre y detalle desplegable inline */
+.specialty-list{gap:12px;}
+.spec-item{display:flex;flex-direction:column;gap:0;}
+.spec-row.spec-click{display:grid;grid-template-columns:minmax(0,1fr) minmax(90px,1fr) 46px;gap:10px;align-items:center;width:100%;min-height:82px;padding:14px 15px;border:1px solid var(--line);border-radius:15px;background:#fff;text-align:left;cursor:pointer;}
+.spec-row .spec-name{display:block;font-size:14px;font-weight:850;line-height:1.3;}
+.spec-row .spec-status{display:block;margin-top:5px;font-size:10px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;line-height:1.35;}
+.spec-row .bar{grid-column:2;grid-row:1;height:9px;}
+.spec-row .spec-pct{grid-column:3;grid-row:1;font-size:14px;}
+.spec-row .spec-meta{grid-column:1/-1;margin:0;font-size:11px;line-height:1.45;color:#777;}
+.inline-topic-detail{margin:9px 0 4px 14px;padding:15px;border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:0 14px 14px 0;background:#fffdfa;}
+.inline-topic-detail[hidden]{display:none!important;}
+.history-reference{margin:10px 0 13px;padding:13px 15px;border:1px solid #e8d9bc;border-radius:13px;background:#fcf7ed;color:#76551d;font-size:14px;font-weight:850;line-height:1.45;letter-spacing:.015em;}
+.topic-detail-note{margin-top:5px;padding-top:10px;border-top:1px solid var(--line);}
+@media(max-width:650px){.spec-row.spec-click{grid-template-columns:minmax(0,1fr) minmax(65px,.8fr) 40px;padding:12px;}.spec-row .spec-name{font-size:13px}.inline-topic-detail{margin-left:7px;padding:11px}.topic-line{grid-template-columns:25px minmax(0,1fr);}.topic-line>.topic-status{grid-column:2;text-align:left;}}
+
 @media(max-width:650px){.topic-line{grid-template-columns:25px minmax(0,1fr)}.topic-status{grid-column:2;text-align:left}}
 
 </style>
@@ -472,10 +487,10 @@ z-index: 20;
       </div>
     </div>
     <div class="card specialty-sidebar">
-      <div class="eyebrow">Diagnóstico continuo</div><h3 class="title" style="font-size:27px;margin:8px 0">Especialidades a priorizar</h3>
-      <p class="subtle">Tus cuatro áreas troncales. Selecciona una para ver sus 10 temas prioritarios y tu rendimiento en cada uno.</p>
+      <div class="eyebrow">Diagnóstico continuo</div><h3 class="title" style="font-size:27px;margin:8px 0">Especialidades a priorizar</h3><div class="history-reference">De acuerdo con los temas más preguntados en ENARM previos (2024–2026)</div>
+      <p class="subtle">Tus cuatro áreas troncales. Selecciona una para desplegar sus 10 temas prioritarios y tu rendimiento en cada uno.</p>
       <div id="specialtyList" class="specialty-list"><div class="empty">Contesta preguntas para construir tu ranking.</div></div><div id="specialtyDetail" class="topic-detail"></div>
-      <p class="mini" style="margin-top:14px">Verde: ≥75% · Amarillo: 60–74% · Rojo: menos de 60%. Menos de 5 respuestas: datos insuficientes.</p>
+      <p class="mini" style="margin-top:14px">Semáforo de rendimiento: verde ≥75% · amarillo 60–74% · rojo <60%. Con menos de 5 respuestas por tema o especialidad: datos insuficientes.</p>
     </div>
   </div>
   <div class="section-head"><div><h2>Tu siguiente movimiento</h2><p>NOURA | ENARM está pensada para convertir errores en acciones concretas.</p></div></div>
@@ -740,8 +755,23 @@ function buildSpecialtyStats(answers,qs,topics){
  renderSpecialtyList('specialtyList',coreAreaStats,'specialtyDetail');
  renderSpecialtyList('progressSpecialties',coreAreaStats,'progressSpecialtyDetail');
 }
-function renderSpecialtyList(id,arr,detailId){const el=$(id);if(!el)return;el.innerHTML=arr.map(a=>{const label=a.status==='gray'?'Datos insuficientes':a.status==='green'?'Fortaleza':a.status==='yellow'?'En desarrollo':'Prioridad alta';return `<button type="button" class="spec-row spec-click status-${a.status}" data-core-area="${a.key}"><span class="spec-name">${esc(a.name)}<span class="spec-status">${label}</span></span><span class="bar"><span class="fill" style="display:block;width:${a.total>=5?a.pct:0}%"></span></span><span class="spec-pct">${a.total>=5?a.pct+'%':'—'}</span><span class="spec-meta">${a.correct} aciertos de ${a.total} preguntas · ${a.total-a.correct} errores · Selecciona para ver los 10 temas</span></button>`}).join('');el.querySelectorAll('[data-core-area]').forEach(btn=>btn.addEventListener('click',()=>{el.querySelectorAll('[data-core-area]').forEach(x=>x.classList.toggle('selected',x===btn));renderCoreAreaDetail(detailId,arr.find(x=>x.key===btn.dataset.coreArea))}));}
-function renderCoreAreaDetail(id,area){const el=$(id);if(!el||!area)return;const ordered=[...area.topicStats].sort((a,b)=>{if(a.total<5&&b.total>=5)return 1;if(b.total<5&&a.total>=5)return -1;return a.pct-b.pct});el.innerHTML=`<div class="topic-detail-head"><div><div class="eyebrow">Desglose por tema</div><strong>${esc(area.name)}</strong></div><span class="topic-status status-${area.status}">${area.total<5?'Datos insuficientes':area.pct+'% global'}</span></div>${ordered.map((t,i)=>{const label=t.status==='gray'?'Datos insuficientes':t.status==='green'?'Dominado':t.status==='yellow'?'Reforzar':'Prioridad alta';return `<div class="topic-line"><span class="topic-rank">${i+1}</span><div><div class="topic-name">${esc(t.name)}</div><div class="topic-meta">Frecuencia de referencia 2026: ×${t.freq} · ${t.correct}/${t.total} aciertos · ${t.errors} errores</div><div class="topic-progress"><span class="status-${t.status}" style="width:${t.total>=5?t.pct:0}%"></span></div></div><span class="topic-status status-${t.status}">${t.total>=5?t.pct+'%':label}</span></div>`}).join('')}<div class="topic-detail-note">Los temas están ordenados por prioridad según el rendimiento individual. El color requiere al menos 5 respuestas por tema. Las frecuencias corresponden al ranking 2026 que compartiste; el rendimiento se calcula con las respuestas guardadas de esta cuenta.</div>`;}
+function renderSpecialtyList(id,arr,detailId){
+ const el=$(id);if(!el)return;
+ el.innerHTML=arr.map(a=>{const label=a.status==='gray'?'Datos insuficientes':a.status==='green'?'Fortaleza':a.status==='yellow'?'En desarrollo':'Prioridad alta';return `<div class="spec-item"><button type="button" class="spec-row spec-click status-${a.status}" data-core-area="${a.key}" aria-expanded="false"><span class="spec-name">${esc(a.name)}<span class="spec-status">${label}</span></span><span class="bar"><span class="fill" style="display:block;width:${a.total>=5?a.pct:0}%"></span></span><span class="spec-pct">${a.total>=5?a.pct+'%':'—'}</span><span class="spec-meta">${a.correct} aciertos de ${a.total} preguntas · ${a.total-a.correct} errores · Toca para ver los 10 temas</span></button><div class="topic-detail inline-topic-detail" data-topic-detail="${a.key}" hidden></div></div>`}).join('');
+ el.querySelectorAll('[data-core-area]').forEach(btn=>btn.addEventListener('click',()=>{
+  const wasOpen=btn.getAttribute('aria-expanded')==='true';
+  el.querySelectorAll('[data-core-area]').forEach(x=>{x.classList.remove('selected');x.setAttribute('aria-expanded','false');const d=el.querySelector(`[data-topic-detail="${x.dataset.coreArea}"]`);if(d){d.hidden=true;d.innerHTML='';}});
+  if(wasOpen)return;
+  btn.classList.add('selected');btn.setAttribute('aria-expanded','true');
+  const detail=el.querySelector(`[data-topic-detail="${btn.dataset.coreArea}"]`);
+  if(detail){detail.hidden=false;renderCoreAreaDetail(detail,arr.find(x=>x.key===btn.dataset.coreArea));}
+ }));
+}
+function renderCoreAreaDetail(el,area){
+ if(!el||!area)return;
+ const ordered=[...area.topicStats].sort((a,b)=>{if(a.total<5&&b.total>=5)return 1;if(b.total<5&&a.total>=5)return -1;return a.pct-b.pct});
+ el.innerHTML=`<div class="topic-detail-head"><div><div class="eyebrow">Desglose por tema</div><strong>${esc(area.name)}</strong></div><span class="topic-status status-${area.status}">${area.total<5?'Datos insuficientes':area.pct+'% global'}</span></div>${ordered.map((t,i)=>{const label=t.status==='gray'?'Datos insuficientes':t.status==='green'?'Dominado':t.status==='yellow'?'Reforzar':'Prioridad alta';return `<div class="topic-line"><span class="topic-rank">${i+1}</span><div><div class="topic-name">${esc(t.name)}</div><div class="topic-meta">Top ENARM 2024–2026 · Referencia 2026: ×${t.freq} · ${t.correct}/${t.total} aciertos · ${t.errors} errores</div><div class="topic-progress"><span class="status-${t.status}" style="width:${t.total>=5?t.pct:0}%"></span></div></div><span class="topic-status status-${t.status}">${t.total>=5?t.pct+'%':label}</span></div>`}).join('')}<div class="topic-detail-note">Temas seleccionados según los rankings y comparativos de ENARM 2024, 2025 y 2026 compartidos. Se ordenan aquí por el rendimiento individual. El color requiere al menos 5 respuestas por tema. Las respuestas y porcentajes corresponden exclusivamente a esta cuenta.</div>`;
+}
 function renderToday(){if(!specialtyStats.length){$('todayTitle').textContent=profile?.onboarding_completed?`Hoy: ${profile?.daily_goal||30} preguntas · ${profile?.topic_goal||1} tema.`:'Primero construyamos tu mapa.';$('todayText').textContent=profile?.onboarding_completed?`NOURA | ENARM ajustará la carga a tus ${profile?.available_minutes||90} minutos, ${profile?.days_per_week||6} días por semana y horario de ${profile?.preferred_study_time||'estudio flexible'}. Prioridad: ${profile?.focus_mode==='curso'?'tu curso':profile?.focus_mode==='prioridades'?'tus temas prioritarios':'tus errores y áreas débiles'}.`:'Haz tu primera sesión para que NOURA | ENARM pueda empezar a personalizar tu plan.';$('progressToday').textContent=profile?.onboarding_completed?`Tu misión: ${profile?.daily_goal||30} preguntas + ${profile?.topic_goal||1} tema.`:'Contesta preguntas para desbloquear tu plan.';return}const target=(profile?.target_specialty||'').toLowerCase();const chosen=specialtyStats.find(x=>x.name.toLowerCase().includes(target)||target.includes(x.name.toLowerCase()))||specialtyStats[0];$('todayTitle').textContent=`Hoy te toca priorizar ${chosen.name}.`;$('todayText').textContent=`Tu rendimiento en esta área es ${chosen.pct}% (${chosen.correct}/${chosen.total}). Tu plan considera ${profile?.daily_goal||30} preguntas, ${profile?.topic_goal||1} tema y ${profile?.available_minutes||90} minutos. Método: ${(profile?.learning_preferences||['preguntas']).join(', ')}.`;$('progressToday').textContent=`Hoy: ${profile?.daily_goal||30} preguntas · ${profile?.topic_goal||1} tema · ${profile?.available_minutes||90} min · ${profile?.preferred_study_time||'horario flexible'}.`}
 let answeredThisBatch=new Map();
 async function startQuestions(){const {data,error}=await db.from('questions').select('id,source_ref,stem,explanation,pearl,gpc_source,difficulty,topic_id,topics(name,specialties(name)),question_options(id,option_key,option_text,sort_order)').eq('active',true).eq('review_status','verified').order('created_at',{ascending:true});if(error){toast(error.message);return}questions=data||[];currentIndex=0;answeredThisBatch=new Map();$('questionEmpty').classList.toggle('hidden',!!questions.length);$('questionsGrid').classList.toggle('hidden',!questions.length);$('batchToolbar').classList.toggle('hidden',!questions.length);if(!questions.length)return;const {data:attempt,error:ae}=await db.from('attempts').insert({user_id:currentUser.id,mode:'practice',total_questions:questions.length}).select().single();if(ae){toast(ae.message);return}attemptId=attempt.id;renderQuestionBatch()}
