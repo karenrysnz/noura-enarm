@@ -318,6 +318,8 @@ z-index: 20;
 .material-folder-results{border-top:1px solid var(--line);padding-top:16px}
 .material-folder-results .material-grid{grid-template-columns:1fr}
 .material-card{box-shadow:none;padding:15px}
+.sim-question-stack{display:grid;grid-template-columns:1fr;gap:16px}.sim-question-card{padding:22px}.sim-question-card .stem{font:500 20px/1.5 Georgia,serif}.sim-page-label{font-size:12px;color:var(--muted);margin:10px 0 0}@media(min-width:1100px){.sim-question-stack{grid-template-columns:1fr}}
+.material-empty-search{padding:28px;text-align:center;border:1px dashed var(--line);border-radius:16px;color:var(--muted);background:#fff}
 .sim-question-nav{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px}
 .sim-question-nav button{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:#fff;font-size:11px}
 .sim-question-nav button.answered{background:#fcf7ed;border-color:var(--gold);font-weight:900}
@@ -329,6 +331,15 @@ z-index: 20;
 @media(max-width:900px){.materials-layout{grid-template-columns:1fr}.materials-generator{position:static}#simulatorHome{grid-template-columns:1fr!important}}
 @media(max-width:600px){.material-folders{grid-template-columns:1fr 1fr}.sim-option{font-size:13px}}
 
+
+/* Revisión final del simulador: verde para aciertos y rojo para errores. */
+.sim-review-box.good{background:#eaf8f0;border:1.5px solid #259765;color:#145b3d}
+.sim-review-box.bad{background:#fff0f0;border:1.5px solid #cf4d4d;color:#8f2525}
+.sim-review-box .sim-review-heading{display:block;font-size:15px;font-weight:900;letter-spacing:.12em;margin-bottom:10px}
+.sim-review-box .explain{color:#4d4a45}
+.sim-review-box .sim-pearl{margin-top:14px}
+.sim-review-box .sim-pearl strong{color:#8b641b}
+.sim-review-box .sim-pearl-star{color:#d5a126;font-size:18px;margin-right:5px;vertical-align:-1px}
 </style>
 </head>
 <body>
@@ -476,13 +487,13 @@ z-index: 20;
   <div class="brand">NOURA | ENARM<small>CONOCIMIENTO <span class="brand-symbol">+</span> CONFIANZA <span class="brand-symbol">+</span> DISCIPLINA <span class="brand-symbol">=</span> RESULTADOS</small></div>
   <nav class="nav">
     <button class="active" data-view="home">Inicio</button>
+    <button data-view="progress">Mi progreso</button>
     <button data-view="questions">Simuladores</button>
     <button data-view="review">Repaso</button>
     <button data-view="materials">Materiales</button>
     <button data-view="flashcards">Flashcards</button>
-    <button data-view="ai">IA</button>
-    <button data-view="progress">Mi progreso</button>
     <button data-view="profile">Perfil</button>
+    <button data-view="ai">IA</button>
     <button id="adminNavButton" class="hidden" type="button">Administradora</button>
   </nav>
 <div class="actions">
@@ -894,6 +905,7 @@ function renderCoreAreaDetail(el,area){
 }
 function renderToday(){if(!specialtyStats.length){$('todayTitle').textContent=profile?.onboarding_completed?`Hoy: ${profile?.daily_goal||30} preguntas · ${profile?.topic_goal||1} tema.`:'Primero construyamos tu mapa.';$('todayText').textContent=profile?.onboarding_completed?`NOURA | ENARM ajustará la carga a tus ${profile?.available_minutes||90} minutos, ${profile?.days_per_week||6} días por semana y horario de ${profile?.preferred_study_time||'estudio flexible'}. Prioridad: ${profile?.focus_mode==='curso'?'tu curso':profile?.focus_mode==='prioridades'?'tus temas prioritarios':'tus errores y áreas débiles'}.`:'Haz tu primera sesión para que NOURA | ENARM pueda empezar a personalizar tu plan.';$('progressToday').textContent=profile?.onboarding_completed?`Tu misión: ${profile?.daily_goal||30} preguntas + ${profile?.topic_goal||1} tema.`:'Contesta preguntas para desbloquear tu plan.';return}const target=(profile?.target_specialty||'').toLowerCase();const chosen=specialtyStats.find(x=>x.name.toLowerCase().includes(target)||target.includes(x.name.toLowerCase()))||specialtyStats[0];$('todayTitle').textContent=`Hoy te toca priorizar ${chosen.name}.`;$('todayText').textContent=`Tu rendimiento en esta área es ${chosen.pct}% (${chosen.correct}/${chosen.total}). Tu plan considera ${profile?.daily_goal||30} preguntas, ${profile?.topic_goal||1} tema y ${profile?.available_minutes||90} minutos. Método: ${(profile?.learning_preferences||['preguntas']).join(', ')}.`;$('progressToday').textContent=`Hoy: ${profile?.daily_goal||30} preguntas · ${profile?.topic_goal||1} tema · ${profile?.available_minutes||90} min · ${profile?.preferred_study_time||'horario flexible'}.`}
 let simulatorQuestions=[],simulatorSelections=new Map(),simulatorIndex=0,simulatorAttemptId=null,simulatorBusy=false;
+const SIMULATOR_PAGE_SIZE=3;
 async function startQuestions(){
   $('simulatorHome').classList.remove('hidden');$('simulatorRunner').classList.add('hidden');$('simulatorResults').classList.add('hidden');$('questionEmpty').classList.add('hidden');
   const goal=Math.max(1,Math.min(280,Number(profile?.daily_goal||30)));
@@ -903,12 +915,12 @@ async function startQuestions(){
 async function loadSimulatorHistory(){
   const host=$('simulatorHistory');host.innerHTML='<div class="empty">Cargando historial…</div>';
   const {data,error}=await db.from('attempts').select('id,total_questions,completed_at,mode').eq('user_id',currentUser.id).not('completed_at','is',null).order('completed_at',{ascending:false}).limit(5);
-  if(error){host.innerHTML='<div class="empty">No se pudo cargar el historial.</div>';console.error('Historial simuladores:',error);return}
+  if(error){host.innerHTML='<div class="empty">No se pudo cargar el historial. Revisa los permisos de la tabla attempts.</div>';console.error('Historial simuladores:',error);return}
   if(!data?.length){host.innerHTML='<div class="empty">Todavía no tienes simuladores terminados.</div>';return}
   const rows=[];
   for(const a of data){
     const {data:ans,error:ae}=await db.from('attempt_answers').select('is_correct').eq('attempt_id',a.id);
-    if(ae){console.error(ae);continue}
+    if(ae){console.error('Respuestas del simulador:',ae);continue}
     const total=(ans||[]).length,correct=(ans||[]).filter(x=>x.is_correct).length,pct=total?Math.round(correct/total*100):0;
     const tone=pct>=75?'green':pct>=60?'yellow':'red';
     rows.push(`<div class="sim-result-row"><div><strong>${new Date(a.completed_at).toLocaleDateString('es-MX')}</strong><div class="mini">${correct}/${total||a.total_questions} aciertos · ${a.total_questions} preguntas</div></div><div class="sim-score ${tone==='green'?'good':tone==='red'?'danger':''}" style="${tone==='yellow'?'color:#a77a16':''}">${pct}%</div></div>`);
@@ -923,7 +935,6 @@ async function startNewSimulator(){
     if(error)throw error;
     const bank=data||[];if(!bank.length){$('questionEmpty').classList.remove('hidden');toast('No hay preguntas verificadas disponibles.');return}
     const goal=Math.max(1,Math.min(280,Number(profile?.daily_goal||30)));
-    // Aleatorizar sin repetir dentro del mismo simulador.
     simulatorQuestions=bank.map(q=>({q,sort:Math.random()})).sort((a,b)=>a.sort-b.sort).slice(0,Math.min(goal,bank.length)).map(x=>x.q);
     if(simulatorQuestions.length<goal)toast(`Hay ${simulatorQuestions.length} preguntas verificadas disponibles; se usarán todas.`);
     const {data:attempt,error:ae}=await db.from('attempts').insert({user_id:currentUser.id,mode:'simulator',total_questions:simulatorQuestions.length}).select().single();
@@ -935,24 +946,29 @@ async function startNewSimulator(){
   finally{btn.disabled=false}
 }
 function renderSimulatorQuestion(){
-  const q=simulatorQuestions[simulatorIndex];if(!q)return;
-  const total=simulatorQuestions.length,selected=simulatorSelections.get(q.id);
-  $('simulatorProgress').textContent=`Pregunta ${simulatorIndex+1} de ${total}`;
-  $('simulatorProgressBar').style.width=`${((simulatorIndex+1)/total)*100}%`;
-  $('simulatorQuestionNav').innerHTML=simulatorQuestions.map((x,i)=>`<button type="button" class="${simulatorSelections.has(x.id)?'answered':''}" data-sim-jump="${i}" aria-label="Ir a pregunta ${i+1}">${i+1}</button>`).join('');
-  $('simulatorQuestionNav').querySelectorAll('[data-sim-jump]').forEach(b=>b.onclick=()=>{simulatorIndex=Number(b.dataset.simJump);renderSimulatorQuestion()});
-  $('simulatorQuestionCard').innerHTML=`<div class="meta"><span class="tag">${esc(q.topics?.specialties?.name||'ENARM')}</span><span class="tag">${esc(q.topics?.name||'Tema')}</span><span class="tag">Dificultad ${q.difficulty||3}/5</span></div><div class="eyebrow">Caso clínico</div><div class="stem" style="margin:12px 0 20px">${q.stem.split('\n').map(x=>`<p>${esc(x)}</p>`).join('')}</div>${(q.question_options||[]).sort((a,b)=>a.sort_order-b.sort_order).map(o=>`<button type="button" class="sim-option ${selected===o.id?'selected':''}" data-sim-option="${o.id}"><span class="key">${esc(o.option_key)}</span>${esc(o.option_text)}</button>`).join('')}`;
-  $('simulatorQuestionCard').querySelectorAll('[data-sim-option]').forEach(b=>b.onclick=()=>{simulatorSelections.set(q.id,b.dataset.simOption);renderSimulatorQuestion()});
-  $('simPrevBtn').disabled=simulatorIndex===0;$('simNextBtn').textContent=simulatorIndex===total-1?'Ir a revisión final →':'Siguiente →';
+  const total=simulatorQuestions.length;if(!total)return;
+  const pageStart=Math.floor(simulatorIndex/SIMULATOR_PAGE_SIZE)*SIMULATOR_PAGE_SIZE;
+  const pageEnd=Math.min(pageStart+SIMULATOR_PAGE_SIZE,total);
+  simulatorIndex=pageStart;
+  $('simulatorProgress').textContent=`Preguntas ${pageStart+1}–${pageEnd} de ${total}`;
+  $('simulatorProgressBar').style.width=`${(simulatorSelections.size/total)*100}%`;
+  $('simulatorQuestionNav').innerHTML=simulatorQuestions.map((x,i)=>`<button type="button" class="${simulatorSelections.has(x.id)?'answered':''} ${i>=pageStart&&i<pageEnd?'current':''}" data-sim-jump="${i}" aria-label="Ir a pregunta ${i+1}">${i+1}</button>`).join('');
+  $('simulatorQuestionNav').querySelectorAll('[data-sim-jump]').forEach(b=>b.onclick=()=>{simulatorIndex=Number(b.dataset.simJump);renderSimulatorQuestion();});
+  const page=simulatorQuestions.slice(pageStart,pageEnd);
+  $('simulatorQuestionCard').innerHTML=`<div class="sim-question-stack">${page.map((q,offset)=>{const globalIndex=pageStart+offset,selected=simulatorSelections.get(q.id);return `<article class="card sim-question-card" data-sim-card="${globalIndex}"><div class="meta"><span class="tag">Pregunta ${globalIndex+1} de ${total}</span><span class="tag">${esc(q.topics?.specialties?.name||'ENARM')}</span><span class="tag">${esc(q.topics?.name||'Tema')}</span><span class="tag">Dificultad ${q.difficulty||3}/5</span></div><div class="eyebrow">Caso clínico</div><div class="stem" style="margin:12px 0 20px">${q.stem.split('\n').map(x=>`<p>${esc(x)}</p>`).join('')}</div>${(q.question_options||[]).slice().sort((a,b)=>a.sort_order-b.sort_order).map(o=>`<button type="button" class="sim-option ${selected===o.id?'selected':''}" data-sim-option="${o.id}" data-sim-qid="${q.id}"><span class="key">${esc(o.option_key)}</span>${esc(o.option_text)}</button>`).join('')}</article>`}).join('')}</div>`;
+  $('simulatorQuestionCard').querySelectorAll('[data-sim-option]').forEach(b=>b.onclick=()=>{simulatorSelections.set(b.dataset.simQid,b.dataset.simOption);renderSimulatorQuestion();});
+  $('simPrevBtn').disabled=pageStart===0;
+  $('simNextBtn').textContent=pageEnd===total?'Ir a revisión final →':'Siguiente 3 preguntas →';
   $('simUnansweredHint').textContent=`Respondidas ${simulatorSelections.size} de ${total}. Puedes cambiar cualquier respuesta antes de terminar.`;
 }
-$('simPrevBtn').addEventListener('click',()=>{if(simulatorIndex>0){simulatorIndex--;renderSimulatorQuestion()}});
-$('simNextBtn').addEventListener('click',()=>{if(simulatorIndex<simulatorQuestions.length-1){simulatorIndex++;renderSimulatorQuestion()}else showSimulatorReview()});
+$('simPrevBtn').addEventListener('click',()=>{if(simulatorIndex>0){simulatorIndex=Math.max(0,simulatorIndex-SIMULATOR_PAGE_SIZE);renderSimulatorQuestion();window.scrollTo({top:0,behavior:'smooth'});}});
+$('simNextBtn').addEventListener('click',()=>{const next=simulatorIndex+SIMULATOR_PAGE_SIZE;if(next<simulatorQuestions.length){simulatorIndex=next;renderSimulatorQuestion();window.scrollTo({top:0,behavior:'smooth'});}else showSimulatorReview();});
 function showSimulatorReview(){
+  $('simulatorQuestionCard').querySelector('#simReviewCard')?.remove();
   const missing=simulatorQuestions.length-simulatorSelections.size;
-  const html=`<div class="card"><div class="eyebrow">Revisión antes de entregar</div><h3 class="title" style="font-size:27px">¿Terminar simulador?</h3><p>Has respondido ${simulatorSelections.size} de ${simulatorQuestions.length} preguntas.${missing?` Te faltan ${missing}; puedes volver a ellas desde los números.`:' Todas tienen respuesta.'}</p><div class="fc-admin-actions"><button class="btn secondary" id="backToSimBtn">Seguir revisando</button><button class="btn" id="confirmFinishSimBtn">Confirmar y terminar</button></div></div>`;
+  const html=`<div class="card" id="simReviewCard" style="margin-top:16px"><div class="eyebrow">Revisión antes de entregar</div><h3 class="title" style="font-size:27px">¿Terminar simulador?</h3><p>Has respondido ${simulatorSelections.size} de ${simulatorQuestions.length} preguntas.${missing?` Te faltan ${missing}; puedes volver a ellas desde los números.`:' Todas tienen respuesta.'}</p><div class="fc-admin-actions"><button class="btn secondary" id="backToSimBtn">Seguir revisando</button><button class="btn" id="confirmFinishSimBtn">Confirmar y terminar</button></div></div>`;
   $('simulatorQuestionCard').insertAdjacentHTML('beforeend',html);
-  $('backToSimBtn').onclick=()=>{document.getElementById('backToSimBtn').closest('.card').remove()};
+  $('backToSimBtn').onclick=()=>{$('simReviewCard').remove()};
   $('confirmFinishSimBtn').onclick=finishSimulator;
 }
 $('finishSimulatorBtn').addEventListener('click',showSimulatorReview);
@@ -961,6 +977,7 @@ async function finishSimulator(){
   const missing=simulatorQuestions.filter(q=>!simulatorSelections.has(q.id));
   if(missing.length&&!confirm(`Hay ${missing.length} preguntas sin responder. ¿Quieres terminar de todos modos?`))return;
   simulatorBusy=true;$('finishSimulatorBtn').disabled=true;
+  const confirmBtn=$('confirmFinishSimBtn');if(confirmBtn)confirmBtn.disabled=true;
   try{
     let correct=0;const results=[];
     for(let i=0;i<simulatorQuestions.length;i++){
@@ -972,13 +989,13 @@ async function finishSimulator(){
       results.push({q,selected:optionId,is_correct:ok,skipped:false});
     }
     const {error:upErr}=await db.from('attempts').update({completed_at:new Date().toISOString()}).eq('id',simulatorAttemptId).eq('user_id',currentUser.id);
-    if(upErr)throw upErr;
     const pct=Math.round(correct/simulatorQuestions.length*100),tone=pct>=75?'green':pct>=60?'yellow':'red';
     $('simulatorRunner').classList.add('hidden');$('simulatorResults').classList.remove('hidden');
-    $('simulatorResults').innerHTML=`<div class="card"><div class="eyebrow">Simulador terminado</div><h3 class="title" style="font-size:32px;margin:8px 0">Tu resultado</h3><div class="sim-score ${tone==='green'?'good':tone==='red'?'danger':''}" style="font-size:48px;${tone==='yellow'?'color:#a77a16':''}">${pct}%</div><p>${correct} aciertos de ${simulatorQuestions.length} preguntas · ${simulatorQuestions.length-correct} por reforzar.</p><div class="history-reference">${tone==='green'?'Buen rendimiento.':tone==='yellow'?'Rendimiento intermedio: identifica tus áreas de oportunidad.':'Necesitas reforzar estos temas antes de avanzar.'}</div><div class="fc-admin-actions"><button class="btn" id="backSimulatorHome">Volver a Simuladores</button></div></div><div class="section-head"><div><h2>Revisión de respuestas</h2><p>Ahora sí puedes consultar aciertos, errores y explicaciones.</p></div></div>${results.map((r,i)=>`<div class="card" style="margin-bottom:12px"><div class="meta"><span class="tag">Pregunta ${i+1}</span><span class="tag">${esc(r.q.topics?.name||'Tema')}</span><span class="tag ${r.is_correct?'good':'danger'}">${r.skipped?'Sin responder':r.is_correct?'Correcta':'Incorrecta'}</span></div><div class="stem">${r.q.stem.split('\n').map(x=>`<p>${esc(x)}</p>`).join('')}</div>${(r.q.question_options||[]).sort((a,b)=>a.sort_order-b.sort_order).map(o=>`<div class="sim-option ${o.id===r.selected?(r.is_correct?'selected':'') : ''}" style="${o.id===r.selected&&!r.is_correct?'border-color:var(--red);background:#fff0f0':''} ${o.option_key===r.q.correct_option?'border-color:var(--green);background:#effaf5':''}"><span class="key">${esc(o.option_key)}</span>${esc(o.option_text)}</div>`).join('')}<div class="feedback ${r.is_correct?'good':'bad'}"><strong>${r.is_correct?'Respuesta correcta':'Revisa este razonamiento'}</strong><div class="explain">${esc(r.q.explanation||'Explicación pendiente.')}</div>${r.q.pearl?`<p class="mini"><strong>Perla ENARM:</strong> ${esc(r.q.pearl)}</p>`:''}${r.q.gpc_source?`<p class="mini"><strong>GPC / fuente:</strong> ${esc(r.q.gpc_source)}</p>`:''}</div></div>`).join('')}`;
-    $('backSimulatorHome').onclick=()=>{ $('simulatorResults').classList.add('hidden');$('simulatorHome').classList.remove('hidden');loadSimulatorHistory();loadDashboard();};
-    await registerStudyDay();await loadDashboard();await loadSimulatorHistory();
-  }catch(err){console.error('Finalizar simulador:',err);toast('No se pudo guardar el simulador: '+(err.message||err))}
+    const saveWarning=upErr?`<div class="feedback bad"><strong>Resultado calculado, pero no se pudo guardar en el historial.</strong><p>${esc(upErr.message)}. Revisa los permisos de la tabla attempts.</p></div>`:'';
+    $('simulatorResults').innerHTML=`<div class="card"><div class="eyebrow">Simulador terminado</div><h3 class="title" style="font-size:32px;margin:8px 0">Tu resultado</h3><div class="sim-score ${tone==='green'?'good':tone==='red'?'danger':''}" style="font-size:48px;${tone==='yellow'?'color:#a77a16':''}">${pct}%</div><p>${correct} aciertos de ${simulatorQuestions.length} preguntas · ${simulatorQuestions.length-correct} por reforzar.</p><div class="history-reference">${tone==='green'?'Buen rendimiento.':tone==='yellow'?'Rendimiento intermedio: identifica tus áreas de oportunidad.':'Necesitas reforzar estos temas antes de avanzar.'}</div>${saveWarning}<div class="fc-admin-actions"><button class="btn" id="backSimulatorHome">Volver a Simuladores</button></div></div><div class="section-head"><div><h2>Revisión de respuestas</h2><p>Ahora sí puedes consultar aciertos, errores y explicaciones.</p></div></div>${results.map((r,i)=>`<div class="card" style="margin-bottom:12px"><div class="meta"><span class="tag">Pregunta ${i+1}</span><span class="tag">${esc(r.q.topics?.name||'Tema')}</span><span class="tag ${r.is_correct?'good':'danger'}">${r.skipped?'Sin responder':r.is_correct?'Correcta':'Incorrecta'}</span></div><div class="stem">${r.q.stem.split('\n').map(x=>`<p>${esc(x)}</p>`).join('')}</div>${(r.q.question_options||[]).slice().sort((a,b)=>a.sort_order-b.sort_order).map(o=>`<div class="sim-option ${o.id===r.selected?(r.is_correct?'selected':'') : ''}" style="${o.id===r.selected&&!r.is_correct?'border-color:var(--red);background:#fff0f0':''} ${o.option_key===r.q.correct_option?'border-color:var(--green);background:#effaf5':''}"><span class="key">${esc(o.option_key)}</span>${esc(o.option_text)}</div>`).join('')}<div class="feedback sim-review-box ${r.is_correct?'good':'bad'}"><strong class="sim-review-heading">REVISIÓN</strong><div class="explain">${esc(r.q.explanation||'Explicación pendiente.')}</div>${r.q.pearl?`<p class="mini sim-pearl"><strong><span class="sim-pearl-star" aria-hidden="true">★</span> Perla ENARM:</strong> ${esc(r.q.pearl)}</p>`:''}${r.q.gpc_source?`<p class="mini"><strong>GPC / fuente:</strong> ${esc(r.q.gpc_source)}</p>`:''}</div></div>`).join('')}`;
+    $('backSimulatorHome').onclick=()=>{$('simulatorResults').classList.add('hidden');$('simulatorHome').classList.remove('hidden');loadSimulatorHistory();loadDashboard();};
+    await registerStudyDay();await loadDashboard();if(!upErr)await loadSimulatorHistory();
+  }catch(err){console.error('Finalizar simulador:',err);toast('No se pudo calcular el resultado: '+(err.message||err));if(confirmBtn)confirmBtn.disabled=false;}
   finally{simulatorBusy=false;$('finishSimulatorBtn').disabled=false}
 }
 async function loadReview(){const {data:wrong}=await db.from('attempt_answers').select('question_id,is_correct,answered_at').eq('is_correct',false).order('answered_at',{ascending:false}).limit(12);if(!wrong?.length){$('reviewList').innerHTML='<div class="card empty">Aún no tienes errores para repasar. Sigue practicando y aquí aparecerán.</div>';return}const ids=[...new Set(wrong.map(x=>x.question_id))];const {data:qs}=await db.from('questions').select('id,stem,pearl,topic_id,topics(name,specialties(name))').in('id',ids);$('reviewList').innerHTML=(qs||[]).map(q=>`<div class="card"><div class="meta"><span class="tag">${esc(q.topics?.specialties?.name||'ENARM')}</span><span class="tag">${esc(q.topics?.name||'Tema')}</span></div><h3 class="title" style="font-size:24px;margin:8px 0">Repasa este caso</h3><p style="line-height:1.6">${esc(q.stem)}</p>${q.pearl?`<p class="mini"><strong style="color:var(--gold)">Perla ENARM:</strong> ${esc(q.pearl)}</p>`:''}</div>`).join('')}
@@ -1340,9 +1357,9 @@ document.querySelectorAll('[data-fc-collection]').forEach(btn => {
 let materialRows=[],activeMaterialFolder='Todos';
 function renderMaterialFolder(){
  const q=($('materialSearch')?.value||'').trim().toLowerCase();
- const rows=materialRows.filter(m=>(activeMaterialFolder==='Todos'||m.material_type===activeMaterialFolder)&&(!q||`${m.title} ${m.content} ${m.material_type}`.toLowerCase().includes(q)));
+ const rows=materialRows.filter(m=>(activeMaterialFolder==='Todos'||m.material_type===activeMaterialFolder)&&(!q||`${m.title||''} ${m.content||''} ${m.material_type||''} ${m.specialty||''} ${m.collection||''}`.toLowerCase().includes(q)));
  $('materialFolderTitle').textContent=activeMaterialFolder==='Todos'?'Todos los materiales':activeMaterialFolder;
- $('materialsList').innerHTML=rows.length?rows.map(m=>`<div class="card material-card"><span class="tag">${esc(m.material_type)}</span><h3>${esc(m.title)}</h3><p>${esc((m.content||'').slice(0,240))}${(m.content||'').length>240?'…':''}</p><div class="mini">${new Date(m.created_at).toLocaleDateString('es-MX')}</div></div>`).join(''):'<div class="card empty">No hay materiales en esta carpeta todavía.</div>';
+ $('materialsList').innerHTML=rows.length?rows.map(m=>`<div class="card material-card"><span class="tag">${esc(m.material_type)}</span><h3>${esc(m.title)}</h3><p>${esc((m.content||'').slice(0,240))}${(m.content||'').length>240?'…':''}</p><div class="mini">${new Date(m.created_at).toLocaleDateString('es-MX')}</div></div>`).join(''):(q?`<div class="material-empty-search"><strong>No se encontraron materiales relacionados con “${esc($('materialSearch').value.trim())}”.</strong><p class="mini">Cuando generes o guardes materiales sobre ese tema, aparecerán aquí.</p></div>`:'<div class="card empty">Todavía no tienes materiales guardados en esta carpeta. Usa el generador con IA para crear el primero.</div>');
 }
 async function loadMaterials(){
  const {data,error}=await db.from('study_materials').select('*').eq('user_id',currentUser.id).neq('material_type','flashcard_image').order('created_at',{ascending:false});
