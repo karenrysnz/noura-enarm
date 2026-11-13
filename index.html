@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="es">
 <head>
@@ -239,8 +238,31 @@ z-index: 20;
 .identity-greeting span{color:var(--gold)}
 .monthly-phrase{margin:13px 0 4px;padding:13px 16px;border-left:3px solid var(--gold);background:#fcf8f0;border-radius:0 13px 13px 0}
 .monthly-phrase-label{display:block;color:var(--gold);font-size:9px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
-.monthly-phrase p{margin:7px 0 0;color:#5d5548;font:italic 16px/1.55 Georgia,serif;transform:rotate(-1deg);transform-origin:left center;letter-spacing:.005em}
+.monthly-phrase p{margin:7px 0 0;color:#5d5548;font:italic 16px/1.55 Georgia,serif;transform:none;letter-spacing:.005em}
 @media(max-width:1000px){.dashboard-grid{grid-template-columns:1fr}.specialty-sidebar{position:static}}
+
+/* Diagnóstico por las cuatro áreas troncales y sus temas prioritarios */
+.monthly-phrase p{transform:none!important;}
+.spec-row{grid-template-columns:minmax(0,1fr) minmax(70px,1fr) 42px;}
+.spec-row.spec-click{width:100%;border:1px solid var(--line);background:#fff;border-radius:13px;padding:12px;text-align:left;cursor:pointer;}
+.spec-row.spec-click:hover,.spec-row.spec-click.selected{border-color:var(--gold);background:#fcf8f0;}
+.spec-row .spec-name{font-weight:850;}
+.spec-meta{grid-column:1/-1;}
+.topic-detail{margin-top:16px;display:grid;gap:10px;}
+.topic-detail:empty{display:none;}
+.topic-detail-head{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--line);padding-bottom:10px;}
+.topic-line{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:9px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff;}
+.topic-rank{width:25px;height:25px;display:grid;place-items:center;border-radius:8px;background:var(--soft);font-size:11px;font-weight:900;color:var(--gold);}
+.topic-name{font-size:13px;font-weight:800;line-height:1.35;}
+.topic-meta{font-size:11px;color:#777;margin-top:4px;}
+.topic-status{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;text-align:right;}
+.topic-status.status-red{color:#bf5050}.topic-status.status-yellow{color:#a77a16}.topic-status.status-green{color:#20885f}.topic-status.status-gray{color:#777}
+.topic-progress{height:6px;background:#eee8df;border-radius:999px;overflow:hidden;margin-top:7px;}
+.topic-progress span{display:block;height:100%;border-radius:999px;background:#aaa;}
+.topic-progress .status-red{background:#c64f4f}.topic-progress .status-yellow{background:#d6a52f}.topic-progress .status-green{background:#23966b}
+.topic-detail-note{font-size:11px;color:#777;line-height:1.5;}
+@media(max-width:650px){.topic-line{grid-template-columns:25px minmax(0,1fr)}.topic-status{grid-column:2;text-align:left}}
+
 </style>
 </head>
 <body>
@@ -451,8 +473,8 @@ z-index: 20;
     </div>
     <div class="card specialty-sidebar">
       <div class="eyebrow">Diagnóstico continuo</div><h3 class="title" style="font-size:27px;margin:8px 0">Especialidades a priorizar</h3>
-      <p class="subtle">Ordenadas de menor a mayor rendimiento. El semáforo requiere al menos 5 respuestas por área.</p>
-      <div id="specialtyList" class="specialty-list"><div class="empty">Contesta preguntas para construir tu ranking.</div></div>
+      <p class="subtle">Tus cuatro áreas troncales. Selecciona una para ver sus 10 temas prioritarios y tu rendimiento en cada uno.</p>
+      <div id="specialtyList" class="specialty-list"><div class="empty">Contesta preguntas para construir tu ranking.</div></div><div id="specialtyDetail" class="topic-detail"></div>
       <p class="mini" style="margin-top:14px">Verde: ≥75% · Amarillo: 60–74% · Rojo: menos de 60%. Menos de 5 respuestas: datos insuficientes.</p>
     </div>
   </div>
@@ -555,7 +577,7 @@ z-index: 20;
 <section id="progressView" class="hidden">
   <div class="section-head"><div><h2>Mi progreso</h2><p>Tu rendimiento real, por especialidad y por sesión.</p></div></div>
   <div class="grid progress-layout"><div class="card"><div class="eyebrow">Resumen</div><div id="bigAccuracy" style="font-size:54px;font-weight:900;margin:9px 0">0%</div><p class="subtle" id="bigAccuracyText">0 aciertos de 0 preguntas.</p><div class="progress" style="margin-top:18px"><div id="overallFill" class="fill" style="width:0%"></div></div></div><div class="card"><div class="eyebrow">Hoy</div><h3 class="title" style="font-size:28px;margin:8px 0" id="progressToday">Vamos a construir tu plan.</h3><p class="subtle">La recomendación se recalcula con tus respuestas guardadas.</p><button class="btn" data-view="questions">Estudiar ahora →</button></div></div>
-  <div class="section-head"><div><h2>Especialidades a priorizar</h2><p>Semáforo basado en tus respuestas reales.</p></div></div><div class="grid dashboard-grid"><div class="card specialty-sidebar"><div id="progressSpecialties" class="specialty-list"></div></div><div class="card calendar-card"><div class="eyebrow">Calendario disponible</div><h3 class="title" style="font-size:26px;margin:8px 0">Tu curso</h3><p id="progressCalendarSummary" class="subtle">Consulta aquí el archivo de tu calendario.</p><button class="btn secondary" id="openProgressCalendar" disabled>Ver calendario</button><button class="btn ghost" id="uploadProgressCalendar" type="button">Subir / actualizar calendario</button></div></div>
+  <div class="section-head"><div><h2>Especialidades a priorizar</h2><p>Semáforo basado en tus respuestas reales.</p></div></div><div class="grid dashboard-grid"><div class="card specialty-sidebar"><div id="progressSpecialties" class="specialty-list"></div><div id="progressSpecialtyDetail" class="topic-detail"></div></div><div class="card calendar-card"><div class="eyebrow">Calendario disponible</div><h3 class="title" style="font-size:26px;margin:8px 0">Tu curso</h3><p id="progressCalendarSummary" class="subtle">Consulta aquí el archivo de tu calendario.</p><button class="btn secondary" id="openProgressCalendar" disabled>Ver calendario</button><button class="btn ghost" id="uploadProgressCalendar" type="button">Subir / actualizar calendario</button></div></div>
   <div class="section-head"><div><h2>Sesiones recientes</h2></div></div><div id="recentSessions" class="grid material-grid"></div>
 </section>
 
@@ -648,8 +670,78 @@ if($('uploadCalendarBtn'))$('uploadCalendarBtn').onclick=()=>$('homeCalendarFile
 $('homeCalendarFile').addEventListener('change',async e=>{const file=e.target.files?.[0];if(file)await uploadCourseCalendar(file);e.target.value='';});
 async function getDataset(){const {data:answers}=await db.from('attempt_answers').select('id,attempt_id,question_id,is_correct,answered_at').order('answered_at',{ascending:false});const {data:questionsData}=await db.from('questions').select('id,topic_id');const {data:topics}=await db.from('topics').select('id,name,specialty_id,specialties(id,name)');const {data:attempts}=await db.from('attempts').select('id,total_questions,answered_questions,correct_answers,started_at,completed_at').order('started_at',{ascending:false});return {answers:answers||[],questions:questionsData||[],topics:topics||[],attempts:attempts||[]}}
 async function loadDashboard(){const d=await getDataset();const {answers,questions:qs,topics,attempts}=d;const correct=answers.filter(a=>a.is_correct).length;$('statAnswered').textContent=answers.length;$('statAccuracy').textContent=(answers.length?Math.round(correct/answers.length*100):0)+'%';$('statAttempts').textContent=attempts.length;buildSpecialtyStats(answers,qs,topics);renderToday();renderIdentityDashboard();}
-function buildSpecialtyStats(answers,qs,topics){const qmap=new Map(qs.map(q=>[q.id,q.topic_id]));const tmap=new Map(topics.map(t=>[t.id,t]));const acc={};for(const a of answers){const tid=qmap.get(a.question_id);const t=tmap.get(tid);const s=t?.specialties;if(!s)continue;const k=s.id;if(!acc[k])acc[k]={name:s.name,total:0,correct:0};acc[k].total++;if(a.is_correct)acc[k].correct++}specialtyStats=Object.values(acc).map(x=>({...x,pct:Math.round(x.correct/x.total*100)})).sort((a,b)=>a.pct-b.pct);renderSpecialtyList('specialtyList',specialtyStats);renderSpecialtyList('progressSpecialties',specialtyStats,true)}
-function renderSpecialtyList(id,arr,showEmpty=false){const el=$(id);if(!arr.length){el.innerHTML='<div class="empty">'+(showEmpty?'Aún no hay suficientes respuestas por especialidad.':'Contesta preguntas para construir tu ranking de especialidades.')+'</div>';return}el.innerHTML=arr.map(s=>{const enough=s.total>=5;const status=!enough?'gray':s.pct>=75?'green':s.pct>=60?'yellow':'red';const label=!enough?'Datos insuficientes':status==='green'?'Fortaleza':status==='yellow'?'Atención':'Prioridad alta';return `<div class="spec-row status-${status}"><div><strong>${esc(s.name)}</strong><div class="spec-status">${label}</div></div><div class="bar"><div class="fill" style="width:${s.pct}%"></div></div><div class="spec-pct">${enough?s.pct+'%':'—'}</div><div class="spec-meta">${s.correct} aciertos de ${s.total} preguntas contestadas</div></div>`}).join('')}
+const ENARM_CORE_AREAS=[
+ {key:'mi',name:'Medicina Interna',topics:[
+  ['Diabetes mellitus y complicaciones',6,['diabetes mellitus','DM2','diabetes y complicaciones','CAD','EHH']],
+  ['Síndrome coronario agudo',6,['síndrome coronario agudo','SICA','SCA','infarto agudo al miocardio','IAM']],
+  ['VIH y enfermedades oportunistas',6,['VIH','infecciones oportunistas']],
+  ['Trastornos hidroelectrolíticos y ácido-base',6,['trastornos hidroelectrolíticos','hidroelectroliticos','ácido-base','acido base','gasometría']],
+  ['Hipertensión arterial y crisis hipertensivas',5,['HAS','hipertensión arterial','crisis hipertensivas']],
+  ['Enfermedad renal crónica y lesión renal aguda',5,['enfermedad renal crónica','ERC','lesión renal aguda','IRA']],
+  ['Intoxicaciones y toxíndromes',5,['intoxicaciones','toxíndromes','paracetamol','organofosforados']],
+  ['Depresión y riesgo suicida',5,['depresión','riesgo suicida']],
+  ['Tuberculosis pulmonar y extrapulmonar',5,['tuberculosis']],
+  ['Neumonía adquirida en la comunidad',5,['NAC','neumonía adquirida en la comunidad','neumonia adquirida en la comunidad']]
+ ]},
+ {key:'pedia',name:'Pediatría',topics:[
+  ['Enfermedades exantemáticas',6,['exantemáticas','exantematicas','sarampión','rubeola','rubéola','exantema súbito']],
+  ['Vacunación y ESAVI',6,['vacunación','vacunas','ESAVI','efectos adversos de vacunas']],
+  ['Diarrea aguda y deshidratación',6,['diarrea aguda','diarreas y deshidratación','deshidratación']],
+  ['Sepsis neonatal',5,['sepsis neonatal']],
+  ['Patología respiratoria neonatal',5,['patología respiratoria neonatal','patologia respiratoria neonatal','TTRN','taquipnea transitoria']],
+  ['Neumonía e infecciones respiratorias pediátricas',5,['neumonía','neumonia','infecciones respiratorias pediátricas']],
+  ['Crisis convulsivas y epilepsia pediátrica',5,['crisis convulsivas','epilepsia','crisis febriles']],
+  ['Reanimación neonatal (RENEO)',4,['reanimación neonatal','reanimacion neonatal','RENEO']],
+  ['Neuroblastoma',4,['neuroblastoma']],
+  ['Maltrato infantil',4,['maltrato infantil']]
+ ]},
+ {key:'gyo',name:'Ginecología y Obstetricia',topics:[
+  ['Aborto y hemorragia del primer trimestre',6,['aborto','hemorragias del primer trimestre','sangrado del primer trimestre']],
+  ['Embarazo ectópico',6,['embarazo ectópico','embarazo ectopico']],
+  ['Cáncer de mama',6,['cáncer de mama','cancer de mama']],
+  ['Cáncer cervicouterino (CCU)',6,['cáncer cervicouterino','cancer cervicouterino','CCU','cáncer de cuello del útero']],
+  ['Control prenatal',6,['control prenatal']],
+  ['Lactancia materna',5,['lactancia materna']],
+  ['Enfermedad trofoblástica gestacional',5,['enfermedad trofoblástica','mola','trofoblástica']],
+  ['Patología mamaria benigna',5,['patología mamaria benigna','fibroadenoma','mastitis']],
+  ['Trabajo de parto y maniobras obstétricas',5,['trabajo de parto','maniobras obstétricas']],
+  ['Amenaza de parto pretérmino y RPM',5,['amenaza de parto pretérmino','parto pretérmino','RPM','ruptura prematura de membranas']]
+ ]},
+ {key:'cirugia',name:'Cirugía General',topics:[
+  ['Oftalmología',6,['oftalmología','oftalmologia','trauma ocular','retinoblastoma','uveítis','uveitis']],
+  ['ATLS y trauma',6,['ATLS','trauma','TCE','trauma de tórax','trauma de torax','trauma abdominal']],
+  ['Patología biliar',6,['patología biliar','patologia biliar','colecistitis','coledocolitiasis','colangitis','patología de vesícula']],
+  ['Hernias',6,['hernias','hernia inguinal','hernia umbilical']],
+  ['TEP y TVP',6,['TEP','TVP','trombosis venosa profunda','tromboembolia pulmonar','IVP']],
+  ['Patología perianal',5,['patología perianal','hemorroides','fisura anal','absceso perianal','fístula anal']],
+  ['Pancreatitis',5,['pancreatitis']],
+  ['Cáncer colorrectal',4,['cáncer colorrectal','cancer colorrectal','cáncer de colon','cancer de colon','cáncer de recto']],
+  ['Oclusión intestinal y vólvulos',4,['oclusión intestinal','occlusion intestinal','vólvulo','volvulo']],
+  ['Infección de sitio quirúrgico y heridas',4,['infección de sitio quirúrgico','infeccion de sitio quirurgico','heridas quirúrgicas','heridas quirurgicas']]
+ ]}
+];
+let coreAreaStats=[];
+function normTopic(v){return String(v||'').toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim()}
+function topicMatches(topicName,aliases){const n=normTopic(topicName);return aliases.some(a=>{const x=normTopic(a);return n===x||(x.length>=5&&(n.includes(x)||x.includes(n)))})}
+function statusFor(total,pct){return total<5?'gray':pct>=75?'green':pct>=60?'yellow':'red'}
+function buildSpecialtyStats(answers,qs,topics){
+ const qmap=new Map(qs.map(q=>[q.id,q.topic_id]));const tmap=new Map(topics.map(t=>[t.id,t]));
+ coreAreaStats=ENARM_CORE_AREAS.map(area=>{
+  const topicStats=area.topics.map(([name,freq,aliases])=>{
+   const matchingTopicIds=new Set(topics.filter(t=>topicMatches(t.name,aliases)).map(t=>t.id));
+   const related=answers.filter(a=>matchingTopicIds.has(qmap.get(a.question_id)));
+   const correct=related.filter(a=>a.is_correct).length;const total=related.length;const pct=total?Math.round(correct/total*100):0;
+   return {name,freq,total,correct,errors:total-correct,pct,status:statusFor(total,pct)};
+  });
+  const total=topicStats.reduce((n,t)=>n+t.total,0),correct=topicStats.reduce((n,t)=>n+t.correct,0),pct=total?Math.round(correct/total*100):0;
+  return {...area,topicStats,total,correct,errors:total-correct,pct,status:statusFor(total,pct)};
+ }).sort((a,b)=>{if(a.total<5&&b.total>=5)return 1;if(b.total<5&&a.total>=5)return -1;return a.pct-b.pct});
+ specialtyStats=coreAreaStats.map(a=>({name:a.name,total:a.total,correct:a.correct,pct:a.pct}));
+ renderSpecialtyList('specialtyList',coreAreaStats,'specialtyDetail');
+ renderSpecialtyList('progressSpecialties',coreAreaStats,'progressSpecialtyDetail');
+}
+function renderSpecialtyList(id,arr,detailId){const el=$(id);if(!el)return;el.innerHTML=arr.map(a=>{const label=a.status==='gray'?'Datos insuficientes':a.status==='green'?'Fortaleza':a.status==='yellow'?'En desarrollo':'Prioridad alta';return `<button type="button" class="spec-row spec-click status-${a.status}" data-core-area="${a.key}"><span class="spec-name">${esc(a.name)}<span class="spec-status">${label}</span></span><span class="bar"><span class="fill" style="display:block;width:${a.total>=5?a.pct:0}%"></span></span><span class="spec-pct">${a.total>=5?a.pct+'%':'—'}</span><span class="spec-meta">${a.correct} aciertos de ${a.total} preguntas · ${a.total-a.correct} errores · Selecciona para ver los 10 temas</span></button>`}).join('');el.querySelectorAll('[data-core-area]').forEach(btn=>btn.addEventListener('click',()=>{el.querySelectorAll('[data-core-area]').forEach(x=>x.classList.toggle('selected',x===btn));renderCoreAreaDetail(detailId,arr.find(x=>x.key===btn.dataset.coreArea))}));}
+function renderCoreAreaDetail(id,area){const el=$(id);if(!el||!area)return;const ordered=[...area.topicStats].sort((a,b)=>{if(a.total<5&&b.total>=5)return 1;if(b.total<5&&a.total>=5)return -1;return a.pct-b.pct});el.innerHTML=`<div class="topic-detail-head"><div><div class="eyebrow">Desglose por tema</div><strong>${esc(area.name)}</strong></div><span class="topic-status status-${area.status}">${area.total<5?'Datos insuficientes':area.pct+'% global'}</span></div>${ordered.map((t,i)=>{const label=t.status==='gray'?'Datos insuficientes':t.status==='green'?'Dominado':t.status==='yellow'?'Reforzar':'Prioridad alta';return `<div class="topic-line"><span class="topic-rank">${i+1}</span><div><div class="topic-name">${esc(t.name)}</div><div class="topic-meta">Frecuencia de referencia 2026: ×${t.freq} · ${t.correct}/${t.total} aciertos · ${t.errors} errores</div><div class="topic-progress"><span class="status-${t.status}" style="width:${t.total>=5?t.pct:0}%"></span></div></div><span class="topic-status status-${t.status}">${t.total>=5?t.pct+'%':label}</span></div>`}).join('')}<div class="topic-detail-note">Los temas están ordenados por prioridad según el rendimiento individual. El color requiere al menos 5 respuestas por tema. Las frecuencias corresponden al ranking 2026 que compartiste; el rendimiento se calcula con las respuestas guardadas de esta cuenta.</div>`;}
 function renderToday(){if(!specialtyStats.length){$('todayTitle').textContent=profile?.onboarding_completed?`Hoy: ${profile?.daily_goal||30} preguntas · ${profile?.topic_goal||1} tema.`:'Primero construyamos tu mapa.';$('todayText').textContent=profile?.onboarding_completed?`NOURA | ENARM ajustará la carga a tus ${profile?.available_minutes||90} minutos, ${profile?.days_per_week||6} días por semana y horario de ${profile?.preferred_study_time||'estudio flexible'}. Prioridad: ${profile?.focus_mode==='curso'?'tu curso':profile?.focus_mode==='prioridades'?'tus temas prioritarios':'tus errores y áreas débiles'}.`:'Haz tu primera sesión para que NOURA | ENARM pueda empezar a personalizar tu plan.';$('progressToday').textContent=profile?.onboarding_completed?`Tu misión: ${profile?.daily_goal||30} preguntas + ${profile?.topic_goal||1} tema.`:'Contesta preguntas para desbloquear tu plan.';return}const target=(profile?.target_specialty||'').toLowerCase();const chosen=specialtyStats.find(x=>x.name.toLowerCase().includes(target)||target.includes(x.name.toLowerCase()))||specialtyStats[0];$('todayTitle').textContent=`Hoy te toca priorizar ${chosen.name}.`;$('todayText').textContent=`Tu rendimiento en esta área es ${chosen.pct}% (${chosen.correct}/${chosen.total}). Tu plan considera ${profile?.daily_goal||30} preguntas, ${profile?.topic_goal||1} tema y ${profile?.available_minutes||90} minutos. Método: ${(profile?.learning_preferences||['preguntas']).join(', ')}.`;$('progressToday').textContent=`Hoy: ${profile?.daily_goal||30} preguntas · ${profile?.topic_goal||1} tema · ${profile?.available_minutes||90} min · ${profile?.preferred_study_time||'horario flexible'}.`}
 let answeredThisBatch=new Map();
 async function startQuestions(){const {data,error}=await db.from('questions').select('id,source_ref,stem,explanation,pearl,gpc_source,difficulty,topic_id,topics(name,specialties(name)),question_options(id,option_key,option_text,sort_order)').eq('active',true).eq('review_status','verified').order('created_at',{ascending:true});if(error){toast(error.message);return}questions=data||[];currentIndex=0;answeredThisBatch=new Map();$('questionEmpty').classList.toggle('hidden',!!questions.length);$('questionsGrid').classList.toggle('hidden',!questions.length);$('batchToolbar').classList.toggle('hidden',!questions.length);if(!questions.length)return;const {data:attempt,error:ae}=await db.from('attempts').insert({user_id:currentUser.id,mode:'practice',total_questions:questions.length}).select().single();if(ae){toast(ae.message);return}attemptId=attempt.id;renderQuestionBatch()}
