@@ -353,6 +353,8 @@ z-index: 20;
 #simulatorResults .meta{display:flex!important;flex-wrap:wrap;align-items:center;gap:10px 12px!important;margin:0 0 16px!important}
 #simulatorResults .meta .tag{display:inline-flex;align-items:center;margin:0 4px 4px 0;padding:7px 11px;line-height:1.35;white-space:normal}
 #simulatorResults .meta .tag + .tag{margin-left:2px}
+
+.admin-home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:18px 0}.admin-home-card{appearance:none;text-align:left;display:flex;flex-direction:column;gap:10px;padding:22px;min-height:170px;border:1px solid var(--line);cursor:pointer;color:var(--ink);transition:transform .15s,border-color .15s}.admin-home-card:hover{transform:translateY(-2px);border-color:var(--gold)}.admin-home-card strong{font-size:17px}.admin-home-card small{font-size:12px;color:var(--muted);line-height:1.5}.admin-home-icon{font-size:25px;color:var(--gold)}.admin-home-arrow{margin-top:auto;font-size:12px;font-weight:800;color:var(--gold)}.admin-back{margin:0 0 14px}
 </style>
 </head>
 <body>
@@ -661,7 +663,7 @@ z-index: 20;
     <div class="fc-admin-grid">
       <div class="field"><label for="fcAdminFiles">Imágenes o archivo ZIP</label><input id="fcAdminFiles" type="file" accept="image/png,image/jpeg,image/webp,.zip" multiple></div>
       <div class="field"><label for="fcAdminCollection">Colección para el lote</label><select id="fcAdminCollection"><option value="originales">Biblioteca NOURA | ENARM</option><option value="tips">Tips personales de la Dra. Karen Reyes</option></select></div>
-      <div class="field"><label for="fcAdminSpecialty">Especialidad para el lote</label><select id="fcAdminSpecialty"><option value="Medicina Interna">Medicina Interna</option><option value="Cirugía General">Cirugía General</option><option value="Ginecología y Obstetricia">Ginecología y Obstetricia</option><option value="Pediatría">Pediatría</option></select></div>
+      <div class="field"><label for="fcAdminSpecialty">Especialidad para el lote</label><select id="fcAdminSpecialty"><option value="Medicina Interna">Medicina Interna</option><option value="Cirugía General">Cirugía General</option><option value="Ginecología y Obstetricia">Ginecología y Obstetricia</option><option value="Pediatría">Pediatría</option><option value="Urgencias">Urgencias</option><option value="Cardiología">Cardiología</option><option value="Dermatología">Dermatología</option><option value="Oftalmología">Oftalmología</option><option value="Otorrinolaringología">Otorrinolaringología</option><option value="Otras especialidades">Otras especialidades</option></select></div>
       <div class="field"><label for="fcAdminOrder">Orden inicial</label><select id="fcAdminOrder"><option value="0">Conservar orden de selección</option><option value="1">Orden alfabético</option></select></div>
     </div>
     <div class="fc-admin-actions">
@@ -683,10 +685,16 @@ z-index: 20;
     </div>
     <div class="fc-subfolder" id="fcSpecialtyTabs" aria-label="Carpetas por especialidad">
       <button type="button" class="active" data-fc-specialty="Todas">Todas</button>
-      <button type="button" data-fc-specialty="Cirugía General">Cirugía General</button>
-      <button type="button" data-fc-specialty="Ginecología y Obstetricia">Ginecología y Obstetricia</button>
       <button type="button" data-fc-specialty="Medicina Interna">Medicina Interna</button>
+      <button type="button" data-fc-specialty="Cirugía General">Cirugía General</button>
       <button type="button" data-fc-specialty="Pediatría">Pediatría</button>
+      <button type="button" data-fc-specialty="Ginecología y Obstetricia">Ginecología y Obstetricia</button>
+      <button type="button" data-fc-specialty="Urgencias">Urgencias</button>
+      <button type="button" data-fc-specialty="Cardiología">Cardiología</button>
+      <button type="button" data-fc-specialty="Dermatología">Dermatología</button>
+      <button type="button" data-fc-specialty="Oftalmología">Oftalmología</button>
+      <button type="button" data-fc-specialty="Otorrinolaringología">Otorrinolaringología</button>
+      <button type="button" data-fc-specialty="Otras especialidades">Otras especialidades</button>
     </div>
     <p id="fcStatus" class="mini">Tus colecciones aparecerán aquí.</p>
   </div>
@@ -742,14 +750,7 @@ z-index: 20;
 </section>
 
 <section id="adminView" class="hidden">
- <div class="section-head"><div><div class="eyebrow">Administración privada</div><h2>Panel de NOURA</h2><p>Administra la plataforma desde un solo lugar.</p></div></div>
-
- <nav class="admin-section-nav" aria-label="Secciones de administración">
-  <button type="button" class="active" data-admin-section="overview">1. Panel general</button>
-  <button type="button" data-admin-section="subscriptions">2. Suscripciones y pagos</button>
-  <button type="button" data-admin-section="codes">3. Códigos y descuentos</button>
-  <button type="button" data-admin-section="library">4. Biblioteca y materiales</button>
- </nav>
+ <div class="section-head"><div><div class="eyebrow">Administración privada</div><h2>Panel de NOURA</h2><p id="adminBreadcrumb">Panel general</p></div></div>
 
  <div id="adminSectionOverview" data-admin-panel="overview">
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px">
@@ -758,18 +759,19 @@ z-index: 20;
    <div class="card"><div class="eyebrow">Accesos vencidos</div><h3 id="adminExpiredUsers">—</h3></div>
    <div class="card"><div class="eyebrow">Becas</div><h3 id="adminScholarshipUsers">—</h3></div>
   </div>
-  <div class="card">
-   <div class="eyebrow">Resumen administrativo</div>
-   <h3 class="title" style="font-size:25px;margin:8px 0">Tu centro de control</h3>
-   <p class="subtle">Desde aquí podrás consultar usuarios, administrar accesos y revisar la biblioteca.</p>
-   <div class="admin-section-note">La administración de suscripciones, usuarios y códigos se habilitará cuando realicemos la migración comercial. Por ahora no se realizan cambios de acceso ni de pagos desde este panel.</div>
+  <div class="grid admin-home-grid">
+   <button class="card admin-home-card" type="button" data-admin-open="subscriptions"><span class="admin-home-icon">◷</span><strong>Suscripciones y pagos</strong><small>Usuarios activos, vencidos, becas e invitados</small><span class="admin-home-arrow">Abrir sección →</span></button>
+   <button class="card admin-home-card" type="button" data-admin-open="codes"><span class="admin-home-icon">◇</span><strong>Códigos y descuentos</strong><small>Invitaciones, becas, accesos y promociones</small><span class="admin-home-arrow">Abrir sección →</span></button>
+   <button class="card admin-home-card" type="button" data-admin-open="library"><span class="admin-home-icon">▤</span><strong>Biblioteca y materiales</strong><small>Administra los recursos de estudio de NOURA</small><span class="admin-home-arrow">Abrir sección →</span></button>
   </div>
+  <div class="admin-section-note">Los módulos comerciales son visuales por ahora. No se realizan cobros ni cambios de acceso desde este panel.</div>
  </div>
 
  <div id="adminSectionSubscriptions" data-admin-panel="subscriptions" class="hidden">
+  <button class="btn secondary admin-back" type="button" data-admin-back>← Volver al panel general</button>
   <div class="card">
    <h3 class="title" style="font-size:24px">Suscripciones y pagos</h3>
-   <p class="subtle">Consulta y organiza los tipos de acceso de las personas registradas.</p>
+   <p class="subtle">Organización de las cuentas y sus modalidades de acceso.</p>
    <div class="fc-tabs" id="adminUserTabs">
     <button class="fc-tab active" data-admin-filter="all" type="button" disabled>Todos</button>
     <button class="fc-tab" data-admin-filter="paid" type="button" disabled>Usuarios activos</button>
@@ -783,6 +785,7 @@ z-index: 20;
  </div>
 
  <div id="adminSectionCodes" data-admin-panel="codes" class="hidden">
+  <button class="btn secondary admin-back" type="button" data-admin-back>← Volver al panel general</button>
   <div class="card">
    <h3 class="title" style="font-size:24px">Códigos y descuentos</h3>
    <p class="subtle">Aquí podrás crear invitaciones, becas, accesos gratuitos y descuentos.</p>
@@ -796,17 +799,17 @@ z-index: 20;
     <div class="field"><label for="adminPromoExpiry">Vigencia hasta</label><input id="adminPromoExpiry" type="date" disabled></div>
    </div>
    <button class="btn" id="adminCreatePromo" type="button" disabled>Crear código</button>
-   <p id="adminPromoStatus" class="mini" aria-live="polite">La creación y activación de códigos se habilitará con la migración comercial.</p>
+   <p id="adminPromoStatus" class="mini" aria-live="polite">La creación y activación de códigos se habilitará en la etapa comercial.</p>
    <div class="section-head" style="margin-top:18px"><div><h3>Códigos creados</h3><p>Consulta sus usos y vigencia cuando se active esta función.</p></div></div>
-   <div id="adminPromoList" class="grid"><div class="admin-section-note">Todavía no hay gestión de códigos conectada. No se crearán códigos ficticios ni se guardarán datos localmente.</div></div>
+   <div id="adminPromoList" class="grid"><div class="admin-section-note">La gestión de códigos todavía no está conectada.</div></div>
   </div>
  </div>
 
  <div id="adminSectionLibrary" data-admin-panel="library" class="hidden">
-  <div class="card">
-   <h3 class="title" style="font-size:24px">Biblioteca y materiales</h3>
-   <p>Esta sección sí está conectada a la administración actual de flashcards y materiales publicados.</p>
-   <button class="btn secondary" id="adminOpenLibrary" type="button">Abrir administración de biblioteca →</button>
+  <button class="btn secondary admin-back" type="button" data-admin-back>← Volver al panel general</button>
+  <div class="grid admin-home-grid">
+   <button class="card admin-home-card" type="button" id="adminOpenFlashcards"><span class="admin-home-icon">▧</span><strong>Flashcards</strong><small>Administrar la biblioteca de flashcards e imágenes</small><span class="admin-home-arrow">Abrir flashcards →</span></button>
+   <button class="card admin-home-card" type="button" id="adminOpenOtherMaterials"><span class="admin-home-icon">▤</span><strong>Otros materiales</strong><small>Por el momento, esta sección estará disponible más adelante</small><span class="admin-home-arrow">Próximamente</span></button>
   </div>
  </div>
 </section>
@@ -1398,12 +1401,14 @@ function renderAdminSections(section){
  const allowed=['overview','subscriptions','codes','library'];
  if(!allowed.includes(section))section='overview';
  document.querySelectorAll('[data-admin-panel]').forEach(panel=>panel.classList.toggle('hidden',panel.dataset.adminPanel!==section));
- document.querySelectorAll('[data-admin-section]').forEach(button=>button.classList.toggle('active',button.dataset.adminSection===section));
+ const labels={overview:'Panel general',subscriptions:'Suscripciones y pagos',codes:'Códigos y descuentos',library:'Biblioteca y materiales'};
+ $('adminBreadcrumb').textContent=labels[section];
 }
-document.querySelectorAll('[data-admin-section]').forEach(button=>button.addEventListener('click',()=>renderAdminSections(button.dataset.adminSection)));
-
+document.querySelectorAll('[data-admin-open]').forEach(button=>button.addEventListener('click',()=>renderAdminSections(button.dataset.adminOpen)));
+document.querySelectorAll('[data-admin-back]').forEach(button=>button.addEventListener('click',()=>renderAdminSections('overview')));
 $('adminNavButton').addEventListener('click',()=>showView('admin'));
-$('adminOpenLibrary').addEventListener('click',()=>{showView('flashcards');setFcAdminMode(true)});
+$('adminOpenFlashcards').addEventListener('click',()=>{showView('flashcards');setFcAdminMode(true)});
+$('adminOpenOtherMaterials').addEventListener('click',()=>toast('Otros materiales estará disponible próximamente.'));
 $('fcStudentMode').addEventListener('click',()=>setFcAdminMode(false));
 function fcSpecialtyOptions(selected){
   return ['Medicina Interna','Cirugía General','Ginecología y Obstetricia','Pediatría'].map(x=>`<option ${x===selected?'selected':''}>${x}</option>`).join('');
