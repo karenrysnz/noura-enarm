@@ -658,7 +658,7 @@ z-index: 20;
   <div id="fcAdminPanel" class="card hidden">
     <div class="fc-admin-actions" style="justify-content:space-between">
       <div><div class="eyebrow">Panel privado · NOURA</div><h3 class="title" style="font-size:25px;margin:7px 0">Carga masiva de imágenes</h3><p class="subtle">Selecciona imágenes o un ZIP. Puedes asignar una clasificación general y corregir cada imagen individualmente.</p></div>
-      <button class="btn secondary" id="fcStudentMode" type="button">Volver a vista de estudiante</button>
+      <div class="fc-admin-actions"><button class="btn secondary" id="fcBackToLibrary" type="button">← Volver a Biblioteca y materiales</button><button class="btn secondary" id="fcBackToAdminHome" type="button">Panel general</button><button class="btn secondary" id="fcStudentMode" type="button">Volver a vista de estudiante</button></div>
     </div>
     <div class="fc-admin-grid">
       <div class="field"><label for="fcAdminFiles">Imágenes o archivo ZIP</label><input id="fcAdminFiles" type="file" accept="image/png,image/jpeg,image/webp,.zip" multiple></div>
@@ -773,13 +773,13 @@ z-index: 20;
    <h3 class="title" style="font-size:24px">Suscripciones y pagos</h3>
    <p class="subtle">Organización de las cuentas y sus modalidades de acceso.</p>
    <div class="fc-tabs" id="adminUserTabs">
-    <button class="fc-tab active" data-admin-filter="all" type="button" disabled>Todos</button>
-    <button class="fc-tab" data-admin-filter="paid" type="button" disabled>Usuarios activos</button>
-    <button class="fc-tab" data-admin-filter="expired" type="button" disabled>Usuarios vencidos</button>
-    <button class="fc-tab" data-admin-filter="scholarship" type="button" disabled>Becas</button>
-    <button class="fc-tab" data-admin-filter="guest" type="button" disabled>Invitados / Acceso gratuito</button>
+    <button class="fc-tab active" data-admin-filter="all" type="button">Todos</button>
+    <button class="fc-tab" data-admin-filter="paid" type="button">Usuarios activos</button>
+    <button class="fc-tab" data-admin-filter="expired" type="button">Usuarios vencidos</button>
+    <button class="fc-tab" data-admin-filter="scholarship" type="button">Becas</button>
+    <button class="fc-tab" data-admin-filter="guest" type="button">Invitados / Acceso gratuito</button>
    </div>
-   <div class="field"><label for="adminStatusFilter">Estado</label><select id="adminStatusFilter" disabled><option value="">Todos</option><option value="active">Activo</option><option value="expired">Vencido</option><option value="suspended">Suspendido</option></select></div>
+   <div class="field"><label for="adminStatusFilter">Estado</label><select id="adminStatusFilter"><option value="">Todos</option><option value="active">Activo</option><option value="expired">Vencido</option><option value="suspended">Suspendido</option></select></div>
    <div id="adminUsersList" class="grid"><div class="admin-section-note">Esta sección es únicamente visual por ahora. La consulta de usuarios, cambios de acceso y pagos se conectarán en la etapa comercial.</div></div>
   </div>
  </div>
@@ -790,18 +790,18 @@ z-index: 20;
    <h3 class="title" style="font-size:24px">Códigos y descuentos</h3>
    <p class="subtle">Aquí podrás crear invitaciones, becas, accesos gratuitos y descuentos.</p>
    <div class="fc-admin-grid">
-    <div class="field"><label for="adminPromoCode">Código</label><input id="adminPromoCode" placeholder="BIENVENIDA2026" disabled></div>
-    <div class="field"><label for="adminPromoType">Beneficio</label><select id="adminPromoType" disabled><option value="guest">Invitado</option><option value="free_access">Acceso gratuito</option><option value="scholarship">Beca</option><option value="discount">Descuento</option></select></div>
-    <div class="field"><label for="adminPromoDays">Duración en días</label><input id="adminPromoDays" type="number" min="1" placeholder="14" disabled></div>
-    <div class="field"><label for="adminPromoMax">Usos máximos</label><input id="adminPromoMax" type="number" min="1" placeholder="100" disabled></div>
-    <div class="field hidden" id="adminDiscountTypeWrap"><label for="adminDiscountType">Tipo de descuento</label><select id="adminDiscountType" disabled><option value="percentage">Porcentaje</option><option value="fixed">Cantidad fija (MXN)</option></select></div>
-    <div class="field hidden" id="adminDiscountValueWrap"><label for="adminDiscountValue">Valor del descuento</label><input id="adminDiscountValue" type="number" min="0" step="0.01" placeholder="10" disabled></div>
-    <div class="field"><label for="adminPromoExpiry">Vigencia hasta</label><input id="adminPromoExpiry" type="date" disabled></div>
+    <div class="field"><label for="adminPromoCode">Código</label><input id="adminPromoCode" placeholder="BIENVENIDA2026"></div>
+    <div class="field"><label for="adminPromoType">Beneficio</label><select id="adminPromoType"><option value="guest">Invitado</option><option value="free_access">Acceso gratuito</option><option value="scholarship">Beca</option><option value="discount">Descuento</option></select></div>
+    <div class="field"><label for="adminPromoDays">Duración en días</label><input id="adminPromoDays" type="number" min="1" placeholder="14"></div>
+    <div class="field"><label for="adminPromoMax">Usos máximos</label><input id="adminPromoMax" type="number" min="1" placeholder="100"></div>
+    <div class="field hidden" id="adminDiscountTypeWrap"><label for="adminDiscountType">Tipo de descuento</label><select id="adminDiscountType"><option value="percentage">Porcentaje</option><option value="fixed">Cantidad fija (MXN)</option></select></div>
+    <div class="field hidden" id="adminDiscountValueWrap"><label for="adminDiscountValue">Valor del descuento</label><input id="adminDiscountValue" type="number" min="0" step="0.01" placeholder="10"></div>
+    <div class="field"><label for="adminPromoExpiry">Vigencia hasta</label><input id="adminPromoExpiry" type="date"></div>
    </div>
-   <button class="btn" id="adminCreatePromo" type="button" disabled>Crear código</button>
-   <p id="adminPromoStatus" class="mini" aria-live="polite">La creación y activación de códigos se habilitará en la etapa comercial.</p>
+   <button class="btn" id="adminCreatePromo" type="button">Crear código</button>
+   <p id="adminPromoStatus" class="mini" aria-live="polite">Los códigos que crees aquí son demostrativos: todavía no activan accesos ni realizan cobros.</p>
    <div class="section-head" style="margin-top:18px"><div><h3>Códigos creados</h3><p>Consulta sus usos y vigencia cuando se active esta función.</p></div></div>
-   <div id="adminPromoList" class="grid"><div class="admin-section-note">La gestión de códigos todavía no está conectada.</div></div>
+   <div id="adminPromoList" class="grid"><div class="admin-section-note">Los códigos creados aparecerán aquí solo durante esta sesión de demostración.</div></div>
   </div>
  </div>
 
@@ -1323,42 +1323,41 @@ function renderFlashcards() {
 }
 
 
-let adminUsersCache=[];let adminUserFilter='all';
-async function loadNouraAdminPanel(){
- if(!isNouraAdmin)return;
- $('adminUsersList').innerHTML='<p class="subtle">Cargando usuarios…</p>';
- const {data,error}=await db.rpc('noura_admin_list_users',{p_access_type:null,p_status:null});
- if(error){$('adminUsersList').textContent='No se pudieron cargar los usuarios: '+error.message;return;}
- adminUsersCache=data||[];
- $('adminTotalUsers').textContent=adminUsersCache.length;
- $('adminActiveUsers').textContent=adminUsersCache.filter(x=>x.status==='active'&&['paid','free_access'].includes(x.access_type)).length;
- $('adminExpiredUsers').textContent=adminUsersCache.filter(x=>x.status==='expired').length;
- $('adminScholarshipUsers').textContent=adminUsersCache.filter(x=>x.access_type==='scholarship'&&x.status==='active').length;
- renderNouraAdminUsers();
- await loadNouraPromoList();
+// Administración comercial: prototipo local únicamente. No consulta ni modifica Supabase.
+let adminUserFilter='all';
+let adminDemoCodes=[];
+function renderAdminDemoUsers(){
+ const labels={all:'Todos',paid:'Usuarios activos',expired:'Usuarios vencidos',scholarship:'Becas',guest:'Invitados / Acceso gratuito'};
+ $('adminUsersList').innerHTML=`<div class="admin-section-note">${labels[adminUserFilter]}: esta vista es demostrativa. La consulta real de cuentas se conectará en la etapa comercial.</div>`;
 }
-function renderNouraAdminUsers(){
- const status=$('adminStatusFilter').value;
- const rows=adminUsersCache.filter(x=>(adminUserFilter==='all'||(adminUserFilter==='paid'&&['paid','free_access'].includes(x.access_type)&&x.status==='active')||(adminUserFilter==='expired'&&x.status==='expired')||(adminUserFilter==='guest'&&['guest','free_access'].includes(x.access_type))||x.access_type===adminUserFilter)&&(!status||x.status===status));
- $('adminUsersList').innerHTML=rows.length?rows.map(x=>`<article class="card"><strong>${esc(x.full_name||'Sin nombre')}</strong><p class="mini">${esc(x.email||'')} · ${esc(x.access_type)} · ${esc(x.status)}</p><p class="mini">Fin: ${x.ends_at?new Date(x.ends_at).toLocaleDateString('es-MX'):'Sin vencimiento'} · Preguntas invitado: ${x.guest_questions_used}/3 · Flashcards: ${x.guest_flashcards_used}/3</p><button class="btn ghost" type="button" data-admin-history="${x.user_id}">Ver códigos utilizados</button><div class="mini hidden" data-admin-history-box="${x.user_id}"></div><div class="fc-admin-actions"><select data-admin-grant="${x.user_id}" aria-label="Tipo de acceso"><option value="paid">Suscripción activa</option><option value="scholarship">Beca</option><option value="free_access">Acceso gratuito</option><option value="guest">Invitado</option></select><input data-admin-days="${x.user_id}" type="number" min="1" placeholder="Días" style="max-width:100px"><button class="btn secondary" data-admin-save="${x.user_id}">Actualizar acceso</button></div></article>`).join(''):'<p class="subtle">No hay usuarios en esta categoría.</p>';
+document.querySelectorAll('#adminUserTabs [data-admin-filter]').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('#adminUserTabs .fc-tab').forEach(x=>x.classList.remove('active'));
+ b.classList.add('active');adminUserFilter=b.dataset.adminFilter;renderAdminDemoUsers();
+}));
+$('adminStatusFilter').addEventListener('change',()=>renderAdminDemoUsers());
+$('adminPromoType').addEventListener('change',()=>{
+ const on=$('adminPromoType').value==='discount';
+ $('adminDiscountTypeWrap').classList.toggle('hidden',!on);
+ $('adminDiscountValueWrap').classList.toggle('hidden',!on);
+});
+function renderAdminDemoCodes(){
+ const host=$('adminPromoList');
+ host.innerHTML=adminDemoCodes.length?adminDemoCodes.map((c,i)=>`<article class="card"><div class="fc-admin-actions" style="justify-content:space-between"><strong>${esc(c.code)}</strong><span class="tag">Demostración</span></div><p class="mini">${esc(c.benefit)} · Duración: ${c.days||'—'} días · Usos máximos: ${c.max||'—'} · Vigencia: ${c.expiry||'Sin fecha'}</p><button class="btn secondary" type="button" data-demo-code-remove="${i}">Quitar de la vista</button></article>`).join(''):'<div class="admin-section-note">Todavía no has creado códigos de demostración.</div>';
 }
-document.querySelectorAll('#adminUserTabs [data-admin-filter]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#adminUserTabs .fc-tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');adminUserFilter=b.dataset.adminFilter;renderNouraAdminUsers()}));
-$('adminStatusFilter').addEventListener('change',renderNouraAdminUsers);
-$('adminUsersList').addEventListener('click',async e=>{const historyBtn=e.target.closest('[data-admin-history]');if(historyBtn){const id=historyBtn.dataset.adminHistory,box=document.querySelector(`[data-admin-history-box="${id}"]`);historyBtn.disabled=true;const {data,error}=await db.rpc('noura_admin_list_user_promo_redemptions',{p_user_id:id});historyBtn.disabled=false;box.classList.remove('hidden');box.innerHTML=error?`No se pudo consultar: ${esc(error.message)}`:(data||[]).length?(data||[]).map(r=>`<p>${esc(r.code)} · ${esc(r.benefit_type)} · ${new Date(r.redeemed_at).toLocaleDateString('es-MX')}</p>`).join(''):'Este usuario todavía no ha utilizado códigos.';return;}const b=e.target.closest('[data-admin-save]');if(!b)return;const id=b.dataset.adminSave,access=document.querySelector(`[data-admin-grant="${id}"]`).value,raw=document.querySelector(`[data-admin-days="${id}"]`).value;const days=raw?Number(raw):null;if(days!==null&&(!Number.isInteger(days)||days<1))return toast('Escribe una duración válida.');b.disabled=true;const {error}=await db.rpc('noura_admin_grant_access',{p_user_id:id,p_access_type:access,p_duration_days:days});b.disabled=false;if(error)return toast('No se pudo actualizar: '+error.message);toast('Acceso actualizado.');await loadNouraAdminPanel()});
-async function loadNouraPromoList(){
- const host=$('adminPromoList');if(!host)return;host.innerHTML='<p class="subtle">Cargando códigos…</p>';
- const {data,error}=await db.rpc('noura_admin_list_promos');if(error){host.textContent='No se pudieron cargar los códigos: '+error.message;return;}
- host.innerHTML=(data||[]).length?data.map(c=>`<article class="card"><div class="fc-admin-actions" style="justify-content:space-between"><strong>${esc(c.code)}</strong><span class="tag ${c.is_active?'good':'danger'}">${c.is_active?'Activo':'Inactivo'}</span></div><p class="mini">${esc(c.benefit_type)} · Usos: ${c.uses_count}${c.max_uses?'/'+c.max_uses:''} · Duración: ${c.duration_days?c.duration_days+' días':'Indefinida'}</p>${c.benefit_type==='discount'?`<p class="mini">Descuento: ${c.discount_value}${c.discount_type==='percentage'?'%':' MXN'}</p>`:''}<button class="btn secondary" data-promo-toggle="${c.id}" data-active="${c.is_active}">${c.is_active?'Desactivar':'Activar'}</button></article>`).join(''):'<p class="subtle">Todavía no has creado códigos.</p>';
-}
-$('adminPromoList').addEventListener('click',async e=>{const b=e.target.closest('[data-promo-toggle]');if(!b)return;b.disabled=true;const {error}=await db.rpc('noura_admin_set_promo_active',{p_code_id:b.dataset.promoToggle,p_is_active:b.dataset.active!=='true'});if(error){b.disabled=false;return toast('No se pudo actualizar el código: '+error.message);}await loadNouraPromoList();});
-$('adminPromoType').addEventListener('change',()=>{const on=$('adminPromoType').value==='discount';$('adminDiscountTypeWrap').classList.toggle('hidden',!on);$('adminDiscountValueWrap').classList.toggle('hidden',!on)});
-$('adminCreatePromo').addEventListener('click',async()=>{
- const code=$('adminPromoCode').value.trim().toUpperCase(),type=$('adminPromoType').value,days=$('adminPromoDays').value,max=$('adminPromoMax').value,discountType=type==='discount'?$('adminDiscountType').value:null;
- if(!code)return toast('Escribe el código.');
- const expiry=$('adminPromoExpiry').value?new Date($('adminPromoExpiry').value+'T23:59:59').toISOString():null;
- const {error}=await db.rpc('noura_admin_create_promo',{p_code:code,p_benefit_type:type,p_duration_days:days?Number(days):null,p_discount_type:discountType,p_discount_value:type==='discount'?Number($('adminDiscountValue').value):null,p_max_uses:max?Number(max):null,p_expires_at:expiry});
- if(error){$('adminPromoStatus').textContent='No se pudo crear: '+error.message;return;}
- $('adminPromoStatus').textContent='Código '+code+' creado correctamente.';$('adminPromoCode').value='';toast('Código promocional creado.');
+$('adminPromoList').addEventListener('click',e=>{const b=e.target.closest('[data-demo-code-remove]');if(!b)return;adminDemoCodes.splice(Number(b.dataset.demoCodeRemove),1);renderAdminDemoCodes();});
+$('adminCreatePromo').addEventListener('click',()=>{
+ const code=$('adminPromoCode').value.trim().toUpperCase();
+ const type=$('adminPromoType').value;const days=$('adminPromoDays').value;const max=$('adminPromoMax').value;
+ const expiry=$('adminPromoExpiry').value;
+ if(!/^[A-Z0-9_-]{4,30}$/.test(code)){ $('adminPromoStatus').textContent='Escribe un código de 4 a 30 caracteres: letras, números, guion o guion bajo.';return; }
+ if(adminDemoCodes.some(x=>x.code===code)){ $('adminPromoStatus').textContent='Ese código ya está en la lista de demostración.';return; }
+ if(days&&(!Number.isInteger(Number(days))||Number(days)<1)){ $('adminPromoStatus').textContent='La duración debe ser un número entero mayor a cero.';return; }
+ if(max&&(!Number.isInteger(Number(max))||Number(max)<1)){ $('adminPromoStatus').textContent='Los usos máximos deben ser un número entero mayor a cero.';return; }
+ if(type==='discount'&&(!Number.isFinite(Number($('adminDiscountValue').value))||Number($('adminDiscountValue').value)<=0)){ $('adminPromoStatus').textContent='Indica un valor de descuento mayor a cero.';return; }
+ const benefit={guest:'Invitado',free_access:'Acceso gratuito',scholarship:'Beca',discount:'Descuento'}[type];
+ adminDemoCodes.unshift({code,benefit,days,max,expiry:expiry?new Date(expiry+'T12:00:00').toLocaleDateString('es-MX'):'',discount:type==='discount'?$('adminDiscountValue').value:''});
+ $('adminPromoStatus').textContent=`Código ${code} agregado a la vista de demostración. No está activo para usuarios.`;
+ $('adminPromoCode').value='';renderAdminDemoCodes();
 });
 async function checkNouraAdmin(){
   const navButton=$('adminNavButton');
@@ -1409,6 +1408,8 @@ document.querySelectorAll('[data-admin-back]').forEach(button=>button.addEventLi
 $('adminNavButton').addEventListener('click',()=>showView('admin'));
 $('adminOpenFlashcards').addEventListener('click',()=>{showView('flashcards');setFcAdminMode(true)});
 $('adminOpenOtherMaterials').addEventListener('click',()=>toast('Otros materiales estará disponible próximamente.'));
+$('fcBackToLibrary').addEventListener('click',()=>{setFcAdminMode(false);showView('admin');renderAdminSections('library');});
+$('fcBackToAdminHome').addEventListener('click',()=>{setFcAdminMode(false);showView('admin');renderAdminSections('overview');});
 $('fcStudentMode').addEventListener('click',()=>setFcAdminMode(false));
 function fcSpecialtyOptions(selected){
   return ['Medicina Interna','Cirugía General','Ginecología y Obstetricia','Pediatría'].map(x=>`<option ${x===selected?'selected':''}>${x}</option>`).join('');
