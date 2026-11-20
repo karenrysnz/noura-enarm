@@ -662,7 +662,7 @@ z-index: 20;
     </div>
     <div class="fc-admin-grid">
       <div class="field"><label for="fcAdminFiles">Imágenes o archivo ZIP</label><input id="fcAdminFiles" type="file" accept="image/png,image/jpeg,image/webp,.zip" multiple></div>
-      <div class="field"><label for="fcAdminCollection">Colección para el lote</label><select id="fcAdminCollection"><option value="originales">Biblioteca NOURA | ENARM</option><option value="tips">Tips personales de la Dra. Karen Reyes</option></select></div>
+      <div class="field"><label for="fcAdminCollection">Colección para el lote</label><select id="fcAdminCollection"><option value="originales">Biblioteca NOURA | ENARM</option><option value="tips">Flashcards con datos clave y tips de la doctora</option></select></div>
       <div class="field"><label for="fcAdminSpecialty">Especialidad para el lote</label><select id="fcAdminSpecialty"><option value="Medicina Interna">Medicina Interna</option><option value="Cirugía General">Cirugía General</option><option value="Ginecología y Obstetricia">Ginecología y Obstetricia</option><option value="Pediatría">Pediatría</option><option value="Urgencias">Urgencias</option><option value="Cardiología">Cardiología</option><option value="Dermatología">Dermatología</option><option value="Oftalmología">Oftalmología</option><option value="Otorrinolaringología">Otorrinolaringología</option><option value="Otras especialidades">Otras especialidades</option></select></div>
       <div class="field"><label for="fcAdminOrder">Orden inicial</label><select id="fcAdminOrder"><option value="0">Conservar orden de selección</option><option value="1">Orden alfabético</option></select></div>
     </div>
@@ -680,7 +680,7 @@ z-index: 20;
     <div class="field"><label for="fcSearch">Buscar flashcards</label><input id="fcSearch" type="search" placeholder="Busca tema, pregunta o palabra clave…"></div>
     <div class="fc-tabs" role="tablist" aria-label="Colecciones de flashcards">
       <button type="button" class="fc-tab active" data-fc-collection="originales">Biblioteca NOURA | ENARM</button>
-      <button type="button" class="fc-tab" data-fc-collection="tips">Tips personales de la Dra. Karen Reyes</button>
+      <button type="button" class="fc-tab" data-fc-collection="tips">Flashcards con datos clave y tips de la doctora</button>
       <button type="button" class="fc-tab" data-fc-collection="favoritos">★ Favoritos</button>
     </div>
     <div class="fc-subfolder" id="fcSpecialtyTabs" aria-label="Carpetas por especialidad">
@@ -699,7 +699,7 @@ z-index: 20;
   </div>
   <div class="card fc-note">
     <strong>Cómo se organizan las colecciones</strong>
-    <p><b>Biblioteca NOURA | ENARM:</b> material original o con permiso de distribución. <b>Tips Dra. Karen:</b> tus propias fichas, esquemas e imágenes. Tus favoritos se guardan en tu cuenta y se sincronizan entre dispositivos cuando inicias sesión con la misma cuenta.</p>
+    <p><b>Biblioteca NOURA | ENARM:</b> material original o con permiso de distribución. <b>Flashcards con datos clave y tips de la doctora:</b> material de repaso para tu preparación. Tus favoritos se guardan en tu cuenta y se sincronizan entre dispositivos cuando inicias sesión con la misma cuenta.</p>
   </div>
 </section>
 
@@ -1245,7 +1245,7 @@ function renderFlashcards() {
     (!q || `${m.title || ''} ${m.content || ''} ${m.topic || ''} ${m.specialty || ''}`.toLowerCase().includes(q))
   );
 
-  status.textContent = `${list.length} ficha${list.length === 1 ? '' : 's'} · ${fcCollection === 'originales' ? 'Biblioteca NOURA | ENARM' : fcCollection === 'tips' ? 'Flashcards con tips personales de la Dra. Karen Reyes' : 'Tus favoritos'}`;
+  status.textContent = `${list.length} ficha${list.length === 1 ? '' : 's'} · ${fcCollection === 'originales' ? 'Biblioteca NOURA | ENARM' : fcCollection === 'tips' ? 'Flashcards con datos clave y tips de la doctora' : 'Tus favoritos'}`;
 
   $('fcEmpty').classList.toggle('hidden', list.length > 0);
   $('fcEmptyTitle').textContent = fcCollection === 'favoritos' ? 'Aún no tienes favoritos.' : 'Esta colección todavía no tiene fichas.';
@@ -1261,7 +1261,7 @@ function renderFlashcards() {
     const title = esc(m.title || 'Flashcard');
     const content = String(m.content || 'Sin contenido guardado.');
     const answer = esc(content.length > 1800 ? content.slice(0, 1800) + '…' : content);
-    const category = fcCategory(m) === 'tips' ? 'Flashcards con tips personales de la Dra. Karen Reyes' : 'Biblioteca NOURA | ENARM';
+    const category = fcCategory(m) === 'tips' ? 'Flashcards con datos clave y tips de la doctora' : 'Biblioteca NOURA | ENARM';
 
     return `<article class="card fc-card" tabindex="0" role="button" aria-label="Voltear flashcard: ${title}" data-fc-id="${esc(id)}">
       <div class="fc-card-top">
@@ -1409,7 +1409,7 @@ function fcSpecialtyOptions(selected){
   return ['Medicina Interna','Cirugía General','Ginecología y Obstetricia','Pediatría'].map(x=>`<option ${x===selected?'selected':''}>${x}</option>`).join('');
 }
 function fcCollectionOptions(selected){
-  return `<option value="originales" ${selected==='originales'?'selected':''}>Biblioteca NOURA | ENARM</option><option value="tips" ${selected==='tips'?'selected':''}>Tips personales de la Dra. Karen Reyes</option>`;
+  return `<option value="originales" ${selected==='originales'?'selected':''}>Biblioteca NOURA | ENARM</option><option value="tips" ${selected==='tips'?'selected':''}>Flashcards con datos clave y tips de la doctora</option>`;
 }
 function renderFcUploadQueue(){
   const host=$('fcAdminPreview');host.innerHTML=fcUploadQueue.map((item,i)=>`<div class="fc-admin-item">
