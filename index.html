@@ -381,6 +381,23 @@ z-index: 20;
 .bank-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 @media(max-width:850px){.bank-import-grid,.bank-editor{grid-template-columns:1fr}.bank-editor .field.full{grid-column:auto}}
 
+
+
+/* Etiqueta visual de dificultad en el simulador */
+.difficulty-pill{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:7px 13px;border-radius:999px;font-size:13px;font-weight:750;
+  line-height:1.2;border:1px solid transparent;white-space:nowrap;
+}
+.difficulty-pill.difficulty-alta{
+  color:#b42318;background:#fef0ef;border-color:#f3b4ae;
+}
+.difficulty-pill.difficulty-media{
+  color:#946200;background:#fff6d8;border-color:#efd27a;
+}
+.difficulty-pill.difficulty-baja{
+  color:#18794e;background:#e9f8ef;border-color:#a8dfbd;
+}
 </style>
 </head>
 <body>
@@ -1136,7 +1153,7 @@ function renderSimulatorQuestion(){
   $('simulatorQuestionNav').innerHTML=simulatorQuestions.map((x,i)=>`<button type="button" class="${simulatorSelections.has(x.id)?'answered':''} ${i>=pageStart&&i<pageEnd?'current':''}" data-sim-jump="${i}" aria-label="Ir a pregunta ${i+1}">${i+1}</button>`).join('');
   $('simulatorQuestionNav').querySelectorAll('[data-sim-jump]').forEach(b=>b.onclick=()=>{simulatorIndex=Number(b.dataset.simJump);renderSimulatorQuestion();});
   const page=simulatorQuestions.slice(pageStart,pageEnd);
-  $('simulatorQuestionCard').innerHTML=`<div class="sim-question-stack">${page.map((q,offset)=>{const globalIndex=pageStart+offset,selected=simulatorSelections.get(q.id);return `<article class="card sim-question-card" data-sim-card="${globalIndex}"><div class="meta" style="display:flex;justify-content:space-between;align-items:center"><span class="tag">Pregunta ${globalIndex+1}</span><span class="tag">Dificultad ${esc(q.difficulty||'Media')}</span></div><div class="eyebrow">Caso clínico</div>${q.clinical_cases?.case_text?`<div class="stem" style="margin:12px 0 16px">${esc(q.clinical_cases.case_text).split(String.fromCharCode(10)).map(x=>`<p>${x}</p>`).join("")}</div>`:""}<div class="eyebrow">Pregunta</div><div class="stem" style="margin:12px 0 20px">${q.stem.split('\n').map(x=>`<p>${esc(x)}</p>`).join('')}</div>${(q.question_options||[]).slice().sort((a,b)=>a.sort_order-b.sort_order).map(o=>`<button type="button" class="sim-option ${selected===o.id?'selected':''}" data-sim-option="${o.id}" data-sim-qid="${q.id}"><span class="key">${esc(o.option_key)}</span>${esc(o.option_text)}</button>`).join('')}</article>`}).join('')}</div>`;
+  $('simulatorQuestionCard').innerHTML=`<div class="sim-question-stack">${page.map((q,offset)=>{const globalIndex=pageStart+offset,selected=simulatorSelections.get(q.id);return `<article class="card sim-question-card" data-sim-card="${globalIndex}"><div class="meta" style="display:flex;justify-content:space-between;align-items:center"><span class="tag">Pregunta ${globalIndex+1}</span><span class="difficulty-pill difficulty-${String(q.difficulty||'Media').toLocaleLowerCase('es')}">Dificultad ${esc(q.difficulty||'Media')}</span></div><div class="eyebrow">Caso clínico</div>${q.clinical_cases?.case_text?`<div class="stem" style="margin:12px 0 16px">${esc(q.clinical_cases.case_text).split(String.fromCharCode(10)).map(x=>`<p>${x}</p>`).join("")}</div>`:""}<div class="eyebrow">Pregunta</div><div class="stem" style="margin:12px 0 20px">${q.stem.split('\n').map(x=>`<p>${esc(x)}</p>`).join('')}</div>${(q.question_options||[]).slice().sort((a,b)=>a.sort_order-b.sort_order).map(o=>`<button type="button" class="sim-option ${selected===o.id?'selected':''}" data-sim-option="${o.id}" data-sim-qid="${q.id}"><span class="key">${esc(o.option_key)}</span>${esc(o.option_text)}</button>`).join('')}</article>`}).join('')}</div>`;
   $('simulatorQuestionCard').querySelectorAll('[data-sim-option]').forEach(b=>b.onclick=()=>{simulatorSelections.set(b.dataset.simQid,b.dataset.simOption);renderSimulatorQuestion();});
   $('simPrevBtn').disabled=pageStart===0;
   $('simNextBtn').textContent=pageEnd===total?'Ir a revisión final →':'Siguiente página →';
