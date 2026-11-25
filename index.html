@@ -829,8 +829,8 @@ z-index: 20;
   <button class="btn secondary admin-back" type="button" data-admin-back>← Volver al panel general</button>
   <div class="grid admin-home-grid">
    <button class="card admin-home-card" type="button" id="adminOpenFlashcards"><span class="admin-home-icon">▧</span><strong>Flashcards</strong><small>Administrar la biblioteca de flashcards e imágenes</small><span class="admin-home-arrow">Abrir flashcards →</span></button>
-   <button class="card admin-home-card" type="button" id="adminOpenOtherMaterials"><span class="admin-home-icon">▤</span><strong>Otros materiales</strong><small>Administrar recursos de estudio</small><span class="admin-home-arrow">Próximamente</span></button>
    <button class="card admin-home-card" type="button" id="adminOpenSimulators"><span class="admin-home-icon">✎</span><strong>Simuladores</strong><small>Importar, revisar, editar, validar y publicar preguntas</small><span class="admin-home-arrow">Administrar banco →</span></button>
+   <button class="card admin-home-card" type="button" id="adminOpenOtherMaterials"><span class="admin-home-icon">▤</span><strong>Otros materiales</strong><small>Administrar recursos de estudio</small><span class="admin-home-arrow">Próximamente</span></button>
   </div>
  </div>
  <div id="adminSectionSimulators" data-admin-panel="simulators" class="hidden">
@@ -1491,14 +1491,37 @@ async function loadAdminQuestionBank(){
 }
 function renderAdminQuestionBankList(){
  const host=$('bankAdminList');if(!host)return;
- const q=($('bankAdminSearch').value||'').toLowerCase().trim(),status=$('bankAdminStatus').value,spec=$('bankAdminSpecialty').value;
- const rows=adminBankRows.filter(x=>(status==='all'||x.review_status===status)&&(spec==='all'||x.specialty===spec)&&(!q||`${x.case_code} ${x.specialty} ${x.topic} ${x.stem} ${x.external_question_id}`.toLowerCase().includes(q)));
+ const normalizeSearch=value=>(value??'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+ const q=normalizeSearch($('bankAdminSearch').value),status=$('bankAdminStatus').value,spec=$('bankAdminSpecialty').value;
+ const rows=adminBankRows.filter(x=>{
+   const searchable=[
+     x.case_code,x.title,x.case_text,x.specialty,x.topic,x.stem,
+     x.external_question_id,x.source_ref,x.source_title,x.source_section,
+     ...(x.options||[]).map(o=>o.option_text)
+   ].join(' ');
+   return (status==='all'||x.review_status===status)
+     &&(spec==='all'||x.specialty===spec)
+     &&(!q||normalizeSearch(searchable).includes(q));
+ });
+ const countLabel=$('bankAdminStatusText');
+ if(countLabel){
+   const total=adminBankRows.length;
+   countLabel.textContent=`Mostrando ${rows.length} de ${total} preguntas · Pendientes: ${adminBankRows.filter(x=>x.review_status==='pending').length} · Validadas: ${adminBankRows.filter(x=>x.review_status==='validated').length} · Publicadas: ${adminBankRows.filter(x=>x.review_status==='published').length}.`;
+ }
  const grouped=new Map();rows.forEach(x=>{const k=x.case_id||x.case_code;if(!grouped.has(k))grouped.set(k,[]);grouped.get(k).push(x);});
  host.innerHTML=grouped.size?[...grouped.entries()].map(([caseId,items])=>`<div class="bank-case"><div class="fc-admin-actions" style="justify-content:space-between"><div><strong>${esc(items[0].case_code)} · ${esc(items[0].title||'Caso clínico')}</strong><div class="mini">${esc(items[0].specialty)} · ${esc(items[0].topic)} · ${esc(items[0].difficulty||'')}</div></div><span class="bank-state ${items.every(x=>x.review_status==='published')?'published':''}">${items.every(x=>x.review_status==='published')?'Publicado':items.some(x=>x.review_status==='validated')?'En validación':'Pendiente'}</span></div>${items.map(x=>`<div class="bank-question-row"><div><strong>${esc(x.external_question_id||x.id)}</strong><div class="mini">${esc((x.stem||'').slice(0,150))}${(x.stem||'').length>150?'…':''}</div><span class="bank-state ${x.review_status}">${x.review_status==='published'?'Publicada':x.review_status==='validated'?'Validada':'Pendiente'}</span></div><button class="btn secondary" type="button" data-bank-edit="${x.id}">Abrir / editar</button></div>`).join('')}</div>`).join(''):'<div class="empty">No hay preguntas con esos filtros.</div>';
- host.querySelectorAll('[data-bank-edit]').forEach(b=>b.onclick=()=>openAdminQuestionEditor(b.dataset.bankEdit));
+ // Delegación de eventos para botones que se regeneran al filtrar.
+ host.onclick=(event)=>{
+   const button=event.target.closest('[data-bank-edit]');
+   if(!button)return;
+   event.preventDefault();
+   openAdminQuestionEditor(button.dataset.bankEdit);
+ };
 }
 function openAdminQuestionEditor(id){
- const q=adminBankRows.find(x=>x.id===id);if(!q)return;adminEditingQuestion=q;
+ const q=(adminBankRows||[]).find(x=>String(x.id)===String(id));
+ if(!q){toast('No se encontró la pregunta. Recarga el banco e inténtalo de nuevo.');return;}
+ adminEditingQuestion=q;
  const opts=(q.options||[]).slice().sort((a,b)=>a.sort_order-b.sort_order);
  $('bankEditorHost').innerHTML=`<div class="card" style="margin-top:18px;border-color:var(--gold)"><div class="eyebrow">Edición administrativa</div><h3 class="title" style="font-size:25px;margin:8px 0">${esc(q.external_question_id||q.id)}</h3><p class="mini">${esc(q.case_code)} · ${esc(q.specialty)} · ${esc(q.topic)}</p><div class="bank-editor">
  <div class="field full"><label>Enunciado</label><textarea id="beStem">${esc(q.stem||'')}</textarea></div>
@@ -1513,7 +1536,10 @@ function openAdminQuestionEditor(id){
  $('beValidate').onclick=()=>setAdminQuestionStatus(q.id,'validated');
  $('bePublish').onclick=()=>setAdminQuestionStatus(q.id,'published');
  $('beClose').onclick=()=>{$('bankEditorHost').innerHTML='';adminEditingQuestion=null;};
+ // Lleva el editor a la vista para que no parezca que el botón no hizo nada.
+ $('bankEditorHost').scrollIntoView({behavior:'smooth',block:'start'});
 }
+window.openAdminQuestionEditor=openAdminQuestionEditor;
 async function saveAdminQuestion(){
  const q=adminEditingQuestion;if(!q)return;
  const options=(q.options||[]).slice().sort((a,b)=>a.sort_order-b.sort_order).map((o,i)=>({id:o.id,text:$('beOpt'+i).value,correct:document.querySelector('input[name="beCorrect"]:checked')?.value===o.id,feedback:$('beFeedback'+i).value}));
