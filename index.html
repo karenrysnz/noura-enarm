@@ -357,17 +357,29 @@ z-index: 20;
 
 .admin-home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:18px 0}.admin-home-card{appearance:none;text-align:left;display:flex;flex-direction:column;gap:10px;padding:22px;min-height:170px;border:1px solid var(--line);cursor:pointer;color:var(--ink);transition:transform .15s,border-color .15s}.admin-home-card:hover{transform:translateY(-2px);border-color:var(--gold)}.admin-home-card strong{font-size:17px}.admin-home-card small{font-size:12px;color:var(--muted);line-height:1.5}.admin-home-icon{font-size:25px;color:var(--gold)}.admin-home-arrow{margin-top:auto;font-size:12px;font-weight:800;color:var(--gold)}.admin-back{margin:0 0 14px}
 
-/* Importador del banco clínico y administración de simuladores */
-.bank-import-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.8fr);gap:16px;align-items:start}
-.bank-preview{max-height:430px;overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff}
-.bank-preview table{width:100%;border-collapse:collapse;font-size:12px}
-.bank-preview th,.bank-preview td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-.bank-preview th{position:sticky;top:0;background:#f8f4ec;z-index:1}
+/* Administración del banco clínico NOURA */
+.bank-import-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.8fr);gap:16px;align-items:start}
+.bank-file{display:block;padding:20px;border:1.5px dashed #d5ccbd;border-radius:16px;background:#fcfaf6;text-align:center;cursor:pointer}
+.bank-file input{display:none}
 .bank-status{padding:12px 14px;border-radius:12px;background:#f7f4ee;color:#625b50;font-size:13px;line-height:1.5}
 .bank-status.success{background:#effaf5;color:#176044}.bank-status.error{background:#fff0f0;color:#8f2525}
-.bank-file{display:block;padding:22px;border:1.5px dashed #d5ccbd;border-radius:16px;background:#fcfaf6;text-align:center;cursor:pointer}
-.bank-file input{display:none}
-@media(max-width:850px){.bank-import-grid{grid-template-columns:1fr}}
+.bank-preview{max-height:380px;overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff}
+.bank-preview table{width:100%;border-collapse:collapse;font-size:12px}
+.bank-preview th,.bank-preview td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.bank-preview th{position:sticky;top:0;background:#f8f4ec}
+.bank-admin-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+.bank-admin-toolbar input,.bank-admin-toolbar select{border:1px solid var(--line);border-radius:11px;padding:11px;background:#fff}
+.bank-case{border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;background:#fff}
+.bank-question-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.bank-state{display:inline-flex;border-radius:999px;padding:5px 9px;background:#f4efe5;font-size:11px;font-weight:800}
+.bank-state.published{background:#eaf7ef;color:#176044}.bank-state.validated{background:#edf3fb;color:#315b89}
+.bank-editor{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bank-editor .field.full{grid-column:1/-1}
+.bank-editor textarea{min-height:100px}
+.bank-option-edit{display:grid;grid-template-columns:32px 1fr auto;gap:8px;align-items:center;margin:8px 0}
+.bank-option-edit input[type=text]{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px}
+.bank-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+@media(max-width:850px){.bank-import-grid,.bank-editor{grid-template-columns:1fr}.bank-editor .field.full{grid-column:auto}}
 
 </style>
 </head>
@@ -771,7 +783,6 @@ z-index: 20;
    <button class="card admin-home-card" type="button" data-admin-open="subscriptions"><span class="admin-home-icon">◷</span><strong>Suscripciones y pagos</strong><small>Usuarios activos, vencidos, becas e invitados</small><span class="admin-home-arrow">Abrir sección →</span></button>
    <button class="card admin-home-card" type="button" data-admin-open="codes"><span class="admin-home-icon">◇</span><strong>Códigos y descuentos</strong><small>Invitaciones, becas, accesos y promociones</small><span class="admin-home-arrow">Abrir sección →</span></button>
    <button class="card admin-home-card" type="button" data-admin-open="library"><span class="admin-home-icon">▤</span><strong>Biblioteca y materiales</strong><small>Administra los recursos de estudio de NOURA</small><span class="admin-home-arrow">Abrir sección →</span></button>
-    <button class="card admin-home-card" type="button" data-admin-open="simulators"><span class="admin-home-icon">✦</span><strong>Simuladores</strong><small>Gestiona el banco clínico y el contenido de los simuladores</small><span class="admin-home-arrow">Abrir sección →</span></button>
   </div>
   <div class="admin-section-note">Los módulos comerciales son visuales por ahora. No se realizan cobros ni cambios de acceso desde este panel.</div>
  </div>
@@ -818,35 +829,37 @@ z-index: 20;
   <button class="btn secondary admin-back" type="button" data-admin-back>← Volver al panel general</button>
   <div class="grid admin-home-grid">
    <button class="card admin-home-card" type="button" id="adminOpenFlashcards"><span class="admin-home-icon">▧</span><strong>Flashcards</strong><small>Administrar la biblioteca de flashcards e imágenes</small><span class="admin-home-arrow">Abrir flashcards →</span></button>
-   <button class="card admin-home-card" type="button" id="adminOpenOtherMaterials"><span class="admin-home-icon">▤</span><strong>Otros materiales</strong><small>Administrar otros recursos de estudio</small><span class="admin-home-arrow">Próximamente</span></button>
-  </div>
-  <div class="card" style="margin-top:16px">
-   <div class="eyebrow">Carga masiva</div><h3 class="title" style="font-size:25px;margin:8px 0">Importar banco clínico desde Excel</h3>
-   <p class="subtle">Usa el formato oficial NOURA: una fila por caso, tres preguntas y cuatro opciones por pregunta. El contenido se importa como borrador y no se publica automáticamente.</p>
-   <div class="bank-import-grid">
-    <div>
-     <label class="bank-file" for="bankExcelFile"><strong>Seleccionar archivo Excel (.xlsx)</strong><div class="mini">Formato oficial: NOURA_ENARM_Banco_Maestro_3_Preguntas_por_Caso_v3</div><input id="bankExcelFile" type="file" accept=".xlsx,.xls"></label>
-     <div id="bankFileName" class="file-chip hidden"></div>
-     <div id="bankImportStatus" class="bank-status" style="margin-top:12px" aria-live="polite">Selecciona tu archivo para validar su estructura y mostrar una vista previa.</div>
-     <div class="fc-admin-actions" style="margin-top:12px"><button class="btn secondary" type="button" id="bankClearPreview">Limpiar</button><button class="btn" type="button" id="bankImportButton" disabled>Importar borradores a Supabase</button></div>
-    </div>
-    <div><strong>Reglas de importación</strong><ul class="mini"><li>Excluye filas de demostración.</li><li>Exige 3 preguntas y 4 opciones por caso.</li><li>Exige una sola respuesta correcta por pregunta.</li><li>Verifica especialidad, tema, dificultad y fuente.</li><li>Rechaza identificadores duplicados antes de importar.</li><li>Si hay un error en el lote, Supabase revierte toda la operación.</li></ul></div>
-   </div>
-   <div id="bankPreview" class="bank-preview hidden" style="margin-top:16px"></div>
+   <button class="card admin-home-card" type="button" id="adminOpenOtherMaterials"><span class="admin-home-icon">▤</span><strong>Otros materiales</strong><small>Administrar recursos de estudio</small><span class="admin-home-arrow">Próximamente</span></button>
+   <button class="card admin-home-card" type="button" id="adminOpenSimulators"><span class="admin-home-icon">✎</span><strong>Simuladores</strong><small>Importar, revisar, editar, validar y publicar preguntas</small><span class="admin-home-arrow">Administrar banco →</span></button>
   </div>
  </div>
  <div id="adminSectionSimulators" data-admin-panel="simulators" class="hidden">
-  <button class="btn secondary admin-back" type="button" data-admin-back>← Volver al panel general</button>
+  <button class="btn secondary admin-back" type="button" data-admin-back data-admin-back-to="library">← Volver a Biblioteca y materiales</button>
   <div class="card">
-   <div class="eyebrow">Banco de preguntas</div><h3 class="title" style="font-size:25px;margin:8px 0">Administración de simuladores</h3>
-   <p class="subtle">Desde aquí se organiza el contenido clínico que alimentará los simuladores. Las preguntas importadas permanecen inactivas hasta su revisión y aprobación.</p>
-   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:16px 0">
-    <div class="card"><div class="eyebrow">Formato de contenido</div><strong>Casos clínicos · 3 preguntas</strong><p class="mini">Cada caso conserva sus preguntas relacionadas.</p></div>
-    <div class="card"><div class="eyebrow">Estado inicial</div><strong>Borrador · Inactivo</strong><p class="mini">No aparece en simuladores hasta su aprobación.</p></div>
-    <div class="card"><div class="eyebrow">Seguridad</div><strong>Claves protegidas</strong><p class="mini">Las respuestas correctas se guardan en el esquema privado.</p></div>
+   <div class="eyebrow">Carga masiva</div>
+   <h3 class="title" style="font-size:25px;margin:8px 0">Importar banco clínico desde Excel</h3>
+   <p class="subtle">Las preguntas se cargan como pendientes de revisión. Solo las que valides y publiques aparecerán en los simuladores de estudiantes.</p>
+   <div class="bank-import-grid">
+    <div>
+     <label class="bank-file" for="bankExcelFile"><strong>Seleccionar archivo Excel (.xlsx)</strong><div class="mini">Una fila por caso · 3 preguntas · 4 opciones por pregunta</div><input id="bankExcelFile" type="file" accept=".xlsx,.xls"></label>
+     <div id="bankFileName" class="file-chip hidden"></div>
+     <div id="bankImportStatus" class="bank-status" style="margin-top:12px" aria-live="polite">Selecciona el Excel para validar su estructura y mostrar una vista previa.</div>
+     <div class="fc-admin-actions" style="margin-top:12px"><button class="btn secondary" type="button" id="bankClearPreview">Limpiar</button><button class="btn" type="button" id="bankImportButton" disabled>Importar preguntas pendientes</button></div>
+    </div>
+    <div><strong>Reglas de importación</strong><ul class="mini"><li>Conserva Baja, Media y Alta.</li><li>Exige tres preguntas y cuatro opciones por caso.</li><li>Exige una sola respuesta correcta.</li><li>Guarda fuentes y retroalimentación por opción.</li><li>No marca contenido como validado.</li><li>La publicación requiere una acción administrativa posterior.</li></ul></div>
    </div>
-   <div class="admin-section-note">La carga y el almacenamiento se conectan a la función segura de Supabase. La edición individual, aprobación clínica, activación y estadísticas administrativas requieren sus siguientes funciones de servidor y permisos; no se simulan aquí.</div>
-   <button class="btn" type="button" id="adminGoImport">Ir a importar banco Excel →</button>
+   <div id="bankPreview" class="bank-preview hidden" style="margin-top:16px"></div>
+  </div>
+  <div class="card" style="margin-top:18px">
+   <div class="section-head" style="margin:0 0 10px"><div><div class="eyebrow">Gestión del contenido</div><h3 class="title" style="font-size:25px;margin:8px 0">Banco de preguntas</h3><p class="subtle">Revisa cada pregunta y decide cuáles publicar.</p></div><button class="btn secondary" id="bankRefresh" type="button">Actualizar</button></div>
+   <div class="bank-admin-toolbar">
+    <input id="bankAdminSearch" type="search" placeholder="Buscar por caso, pregunta o tema" style="flex:1;min-width:210px">
+    <select id="bankAdminStatus"><option value="all">Todos los estados</option><option value="pending">Pendientes</option><option value="validated">Validadas</option><option value="published">Publicadas</option></select>
+    <select id="bankAdminSpecialty"><option value="all">Todas las especialidades</option></select>
+   </div>
+   <div id="bankAdminStatusText" class="mini" aria-live="polite">Cargando banco…</div>
+   <div id="bankAdminList"></div>
+   <div id="bankEditorHost"></div>
   </div>
  </div>
 </section>
@@ -1089,7 +1102,7 @@ async function startNewSimulator(){
   const btn=$('startSimulatorBtn');btn.disabled=true;
   try{
     if(!isNouraAdmin&&nouraAccess.status!=='active'){toast('Tu periodo de invitado terminó. Tu historial se conserva; activa tu suscripción para continuar.');return;}
-    const {data,error}=await db.from('questions').select('id,source_ref,stem,explanation,pearl,gpc_source,difficulty,topic_id,topics(name,specialties(name)),question_options(id,option_key,option_text,sort_order)').eq('active',true).eq('review_status','verified').order('created_at',{ascending:true});
+    const {data,error}=await db.from('questions').select('id,source_ref,stem,explanation,pearl,gpc_source,difficulty,topic_id,topics(name,specialties(name)),clinical_cases(case_text,title),question_options(id,option_key,option_text,sort_order)').eq('active',true).eq('review_status','verified').order('created_at',{ascending:true});
     if(error)throw error;
     const bank=data||[];if(!bank.length){$('questionEmpty').classList.remove('hidden');toast('No hay preguntas verificadas disponibles.');return}
     const configuredGoal=Math.max(1,Math.min(280,Number(profile?.daily_goal||30)));
@@ -1117,7 +1130,7 @@ function renderSimulatorQuestion(){
   $('simulatorQuestionNav').innerHTML=simulatorQuestions.map((x,i)=>`<button type="button" class="${simulatorSelections.has(x.id)?'answered':''} ${i>=pageStart&&i<pageEnd?'current':''}" data-sim-jump="${i}" aria-label="Ir a pregunta ${i+1}">${i+1}</button>`).join('');
   $('simulatorQuestionNav').querySelectorAll('[data-sim-jump]').forEach(b=>b.onclick=()=>{simulatorIndex=Number(b.dataset.simJump);renderSimulatorQuestion();});
   const page=simulatorQuestions.slice(pageStart,pageEnd);
-  $('simulatorQuestionCard').innerHTML=`<div class="sim-question-stack">${page.map((q,offset)=>{const globalIndex=pageStart+offset,selected=simulatorSelections.get(q.id);return `<article class="card sim-question-card" data-sim-card="${globalIndex}"><div class="meta"><span class="tag">Pregunta ${globalIndex+1} de ${total}</span><span class="tag">${esc(q.topics?.specialties?.name||'ENARM')}</span><span class="tag">${esc(q.topics?.name||'Tema')}</span><span class="tag">Dificultad ${q.difficulty||3}/5</span></div><div class="eyebrow">Caso clínico</div><div class="stem" style="margin:12px 0 20px">${q.stem.split('\n').map(x=>`<p>${esc(x)}</p>`).join('')}</div>${(q.question_options||[]).slice().sort((a,b)=>a.sort_order-b.sort_order).map(o=>`<button type="button" class="sim-option ${selected===o.id?'selected':''}" data-sim-option="${o.id}" data-sim-qid="${q.id}"><span class="key">${esc(o.option_key)}</span>${esc(o.option_text)}</button>`).join('')}</article>`}).join('')}</div>`;
+  $('simulatorQuestionCard').innerHTML=`<div class="sim-question-stack">${page.map((q,offset)=>{const globalIndex=pageStart+offset,selected=simulatorSelections.get(q.id);return `<article class="card sim-question-card" data-sim-card="${globalIndex}"><div class="meta"><span class="tag">Pregunta ${globalIndex+1} de ${total}</span><span class="tag">${esc(q.topics?.specialties?.name||'ENARM')}</span><span class="tag">${esc(q.topics?.name||'Tema')}</span><span class="tag">Dificultad ${esc(q.difficulty||'Media')}</span></div><div class="eyebrow">Caso clínico</div>${q.clinical_cases?.case_text?`<div class="stem" style="margin:12px 0 16px">${esc(q.clinical_cases.case_text).split(String.fromCharCode(10)).map(x=>`<p>${x}</p>`).join("")}</div>`:""}<div class="eyebrow">Pregunta</div><div class="stem" style="margin:12px 0 20px">${q.stem.split('\n').map(x=>`<p>${esc(x)}</p>`).join('')}</div>${(q.question_options||[]).slice().sort((a,b)=>a.sort_order-b.sort_order).map(o=>`<button type="button" class="sim-option ${selected===o.id?'selected':''}" data-sim-option="${o.id}" data-sim-qid="${q.id}"><span class="key">${esc(o.option_key)}</span>${esc(o.option_text)}</button>`).join('')}</article>`}).join('')}</div>`;
   $('simulatorQuestionCard').querySelectorAll('[data-sim-option]').forEach(b=>b.onclick=()=>{simulatorSelections.set(b.dataset.simQid,b.dataset.simOption);renderSimulatorQuestion();});
   $('simPrevBtn').disabled=pageStart===0;
   $('simNextBtn').textContent=pageEnd===total?'Ir a revisión final →':'Siguiente 3 preguntas →';
@@ -1397,8 +1410,8 @@ $('adminCreatePromo').addEventListener('click',()=>{
  $('adminPromoCode').value='';renderAdminDemoCodes();
 });
 
-// ========================= IMPORTADOR EXCEL NOURA =========================
-let bankImportPayload=null, bankImportFileName='';
+// ========================= IMPORTADOR Y ADMINISTRACIÓN DEL BANCO NOURA =========================
+let bankImportPayload=null,bankImportFileName='',adminBankRows=[],adminEditingQuestion=null;
 const BANK_CATEGORIES=['Conocimiento médico','Interpretación clínica','Razonamiento clínico','Guías y protocolos'];
 function bankCell(row,key){return String(row[key]??'').trim();}
 function bankBool(value){return ['true','1','si','sí','s','x','correcta','correcto','yes'].includes(String(value??'').trim().toLowerCase());}
@@ -1409,18 +1422,20 @@ function bankDate(value){
  const v=String(value).trim();if(/^\d{4}-\d{2}-\d{2}$/.test(v))return v;
  const m=v.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);return m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:v;
 }
-function bankSourceType(value){const v=String(value||'').trim().toUpperCase();return v.includes('PRONAM')?'PRONAM':v.includes('GINA')?'GINA':v.includes('GPC')?'GPC':v;}
+function bankDifficulty(v){const s=String(v??'').trim().toLocaleLowerCase('es');if(s==='baja')return 'Baja';if(s==='media')return 'Media';if(s==='alta')return 'Alta';return '';}
+function bankSourceType(v){const s=String(v||'').trim().toUpperCase();return s.includes('PRONAM')?'PRONAM':s.includes('GINA')?'GINA':s.includes('GPC')?'GPC':s;}
 function bankQuestion(row,n){
- const p=`pregunta_${n}_`,options=['A','B','C','D'].map(key=>({key,text:bankCell(row,p+'opcion_'+key),correct:bankBool(row[p+key+'_correcta']),error_category:bankCell(row,p+key+'_tipo_error')||null,explanation:bankCell(row,p+key+'_explicacion')||null}));
+ const p=`pregunta_${n}_`;
+ const options=['A','B','C','D'].map(key=>({key,text:bankCell(row,p+'opcion_'+key),correct:bankBool(row[p+key+'_correcta']),error_category:bankCell(row,p+key+'_tipo_error')||null,explanation:bankCell(row,p+key+'_explicacion')||null}));
  const source={type:bankSourceType(bankCell(row,p+'tipo_fuente')),reference_code:bankCell(row,p+'codigo_referencia'),title:bankCell(row,p+'titulo_referencia'),year:bankCell(row,p+'anio_referencia'),section:bankCell(row,p+'apartado_recomendacion'),page:bankCell(row,p+'pagina'),url:bankCell(row,p+'url_referencia'),clinical_validation:bankCell(row,p+'validacion_clinica'),reviewer:bankCell(row,p+'revisor'),validation_date:bankDate(row[p+'fecha_validacion'])};
- return {external_id:bankCell(row,p+'id'),cognitive_category:bankCell(row,p+'categoria_principal'),difficulty:Number(row[p+'dificultad']||row.dificultad_caso||3),objective:bankCell(row,p+'objetivo'),stem:bankCell(row,p+'enunciado'),pearl:bankCell(row,p+'perla_enarm'),options,source};
+ return {external_id:bankCell(row,p+'id'),cognitive_category:bankCell(row,p+'categoria_principal'),difficulty:bankDifficulty(row[p+'dificultad']),objective:bankCell(row,p+'objetivo'),stem:bankCell(row,p+'enunciado'),pearl:bankCell(row,p+'perla_enarm'),options,source};
 }
 function bankValidateCase(row,index){
- const code=bankCell(row,'case_id'),issues=[],cd=Number(row.dificultad_caso||3);
- if(!code)issues.push('Falta case_id');if(!bankCell(row,'especialidad'))issues.push('Falta especialidad');if(!bankCell(row,'tema'))issues.push('Falta tema');if(!bankCell(row,'texto_caso_clinico'))issues.push('Falta texto clínico');if(!Number.isInteger(cd)||cd<1||cd>5)issues.push('Dificultad del caso debe ser 1–5');
- const questions=[1,2,3].map(n=>bankQuestion(row,n));
- questions.forEach((q,i)=>{if(!q.external_id)issues.push(`P${i+1}: falta identificador`);if(!q.stem)issues.push(`P${i+1}: falta enunciado`);if(!BANK_CATEGORIES.includes(q.cognitive_category))issues.push(`P${i+1}: categoría cognitiva inválida`);if(!Number.isInteger(q.difficulty)||q.difficulty<1||q.difficulty>5)issues.push(`P${i+1}: dificultad debe ser 1–5`);if(q.options.some(o=>!o.text))issues.push(`P${i+1}: falta texto de alguna opción`);if(q.options.filter(o=>o.correct).length!==1)issues.push(`P${i+1}: debe tener exactamente una respuesta correcta`);if(!['GPC','PRONAM','GINA'].includes(q.source.type))issues.push(`P${i+1}: fuente debe ser GPC, PRONAM o GINA`);if(!q.source.reference_code)issues.push(`P${i+1}: falta código de referencia`);});
- return {index,code,issues,questions};
+ const code=bankCell(row,'case_id'),issues=[],cd=bankDifficulty(row.dificultad_caso);
+ if(!code)issues.push('Falta case_id');if(!bankCell(row,'especialidad'))issues.push('Falta especialidad');if(!bankCell(row,'tema'))issues.push('Falta tema');if(!bankCell(row,'texto_caso_clinico'))issues.push('Falta texto clínico');if(!cd)issues.push('Dificultad del caso debe ser Baja, Media o Alta');
+ const qs=[1,2,3].map(n=>bankQuestion(row,n));
+ qs.forEach((q,i)=>{if(!q.external_id)issues.push(`P${i+1}: falta identificador`);if(!q.stem)issues.push(`P${i+1}: falta enunciado`);if(!BANK_CATEGORIES.includes(q.cognitive_category))issues.push(`P${i+1}: categoría cognitiva inválida`);if(!q.difficulty)issues.push(`P${i+1}: dificultad debe ser Baja, Media o Alta`);if(q.options.some(o=>!o.text))issues.push(`P${i+1}: falta texto de alguna opción`);if(q.options.filter(o=>o.correct).length!==1)issues.push(`P${i+1}: debe tener exactamente una respuesta correcta`);if(!['GPC','PRONAM','GINA'].includes(q.source.type))issues.push(`P${i+1}: fuente debe ser GPC, PRONAM o GINA`);if(!q.source.reference_code)issues.push(`P${i+1}: falta código de referencia`);});
+ return {index,code,issues,questions:qs};
 }
 function bankBuildPayload(rows){
  const validRows=[],errors=[],seenCases=new Set(),seenQuestions=new Set();let ignored=0;
@@ -1428,40 +1443,93 @@ function bankBuildPayload(rows){
  const result=bankValidateCase(row,index+2);if(seenCases.has(code))result.issues.push('case_id duplicado dentro del Excel');seenCases.add(code);
  result.questions.forEach(q=>{if(seenQuestions.has(q.external_id))result.issues.push(`ID de pregunta duplicado: ${q.external_id}`);seenQuestions.add(q.external_id);});
  if(result.issues.length){errors.push(result);return;}
- validRows.push({case_id:code,specialty:bankCell(row,'especialidad'),topic:bankCell(row,'tema'),subtopic:bankCell(row,'subtema'),title:bankCell(row,'titulo_caso'),case_text:bankCell(row,'texto_caso_clinico'),age:bankCell(row,'edad'),sex:bankCell(row,'sexo'),population_group:bankCell(row,'grupo_poblacional'),care_level:bankCell(row,'nivel_atencion'),difficulty:Number(row.dificultad_caso||3),general_objective:bankCell(row,'objetivo_general'),questions:result.questions});
+ validRows.push({case_id:code,specialty:bankCell(row,'especialidad'),topic:bankCell(row,'tema'),subtopic:bankCell(row,'subtema'),title:bankCell(row,'titulo_caso'),case_text:bankCell(row,'texto_caso_clinico'),age:bankCell(row,'edad'),sex:bankCell(row,'sexo'),population_group:bankCell(row,'grupo_poblacional'),care_level:bankCell(row,'nivel_atencion'),difficulty:bankDifficulty(row.dificultad_caso),general_objective:bankCell(row,'objetivo_general'),questions:result.questions});
  });
  return {validRows,errors,ignored};
 }
 function renderBankPreview(payload){
  const host=$('bankPreview');host.classList.remove('hidden');
- host.innerHTML=`<table><thead><tr><th>Fila / Caso</th><th>Preguntas</th><th>Validación</th></tr></thead><tbody>${payload.validRows.map(c=>`<tr><td>${esc(c.case_id)}<div class="mini">${esc(c.specialty)} · ${esc(c.topic)}</div></td><td>3</td><td class="good">Lista para importar</td></tr>`).join('')}${payload.errors.map(e=>`<tr><td>Fila ${e.index}<div class="mini">${esc(e.code||'Sin ID')}</div></td><td>—</td><td class="danger">${e.issues.map(esc).join('<br>')}</td></tr>`).join('')}</tbody></table>`;
+ host.innerHTML=`<table><thead><tr><th>Caso</th><th>Preguntas</th><th>Estado</th></tr></thead><tbody>${payload.validRows.map(c=>`<tr><td>${esc(c.case_id)}<div class="mini">${esc(c.specialty)} · ${esc(c.topic)} · ${esc(c.difficulty)}</div></td><td>3</td><td class="good">Listo para importar</td></tr>`).join('')}${payload.errors.map(e=>`<tr><td>Fila ${e.index}<div class="mini">${esc(e.code||'Sin ID')}</div></td><td>—</td><td class="danger">${e.issues.map(esc).join('<br>')}</td></tr>`).join('')}</tbody></table>`;
  $('bankImportStatus').className='bank-status '+(payload.errors.length?'error':'success');
- $('bankImportStatus').textContent=`${payload.validRows.length} caso(s) válidos · ${payload.validRows.length*3} preguntas · ${payload.errors.length} caso(s) con errores · ${payload.ignored} fila(s) demostrativas o vacías ignoradas. ${payload.errors.length?'Corrige los errores en Excel antes de importar.':'Vista previa lista.'}`;
+ $('bankImportStatus').textContent=`${payload.validRows.length} casos válidos · ${payload.validRows.length*3} preguntas · ${payload.errors.length} casos con errores · ${payload.ignored} filas vacías/demo omitidas.`;
  $('bankImportButton').disabled=!payload.validRows.length||payload.errors.length>0;
 }
 $('bankExcelFile').addEventListener('change',async e=>{
  const file=e.target.files?.[0];bankImportPayload=null;bankImportFileName='';$('bankImportButton').disabled=true;$('bankPreview').classList.add('hidden');if(!file)return;
  $('bankFileName').classList.remove('hidden');$('bankFileName').textContent='📎 '+file.name;$('bankImportStatus').className='bank-status';$('bankImportStatus').textContent='Leyendo y validando el archivo…';
  try{
-  if(!window.XLSX)throw new Error('No se pudo cargar el lector Excel. Recarga NOURA e inténtalo de nuevo.');
-  const workbook=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true}),sheet=workbook.Sheets['BANCO NOURA']||workbook.Sheets[workbook.SheetNames[0]];
-  if(!sheet)throw new Error('El archivo no contiene una hoja de datos.');
-  const rows=XLSX.utils.sheet_to_json(sheet,{defval:'',raw:true});if(!rows.length)throw new Error('La hoja no contiene filas de datos.');
-  const headers=Object.keys(rows[0]),required=['especialidad','tema','case_id','texto_caso_clinico','pregunta_1_id','pregunta_2_id','pregunta_3_id'],missing=required.filter(x=>!headers.includes(x));
-  if(missing.length)throw new Error('No coincide con la plantilla oficial. Faltan columnas: '+missing.join(', '));
-  const payload=bankBuildPayload(rows);if(!payload.validRows.length)throw new Error('No hay casos válidos para importar. Revisa los identificadores y errores.');
+  if(!window.XLSX)throw new Error('No se pudo cargar el lector Excel. Recarga la página.');
+  const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true}),sheet=wb.Sheets['BANCO NOURA']||wb.Sheets[wb.SheetNames[0]];
+  if(!sheet)throw new Error('No se encontró la hoja BANCO NOURA.');
+  const rows=XLSX.utils.sheet_to_json(sheet,{defval:'',raw:true});if(!rows.length)throw new Error('La hoja no contiene filas.');
+  const required=['especialidad','tema','case_id','texto_caso_clinico','dificultad_caso','pregunta_1_id','pregunta_2_id','pregunta_3_id'];
+  const headers=Object.keys(rows[0]),missing=required.filter(k=>!headers.includes(k));if(missing.length)throw new Error('Faltan columnas: '+missing.join(', '));
+  const payload=bankBuildPayload(rows);if(!payload.validRows.length)throw new Error('No hay casos válidos. Revisa la vista de errores.');
   bankImportPayload=payload.validRows;bankImportFileName=file.name;renderBankPreview(payload);
- }catch(err){console.error('NOURA Excel import:',err);$('bankImportStatus').className='bank-status error';$('bankImportStatus').textContent=err.message||'No se pudo leer el archivo.';}
- e.target.value='';
+ }catch(err){console.error(err);$('bankImportStatus').className='bank-status error';$('bankImportStatus').textContent=err.message||'No se pudo leer el Excel.';}
 });
-$('bankClearPreview').addEventListener('click',()=>{bankImportPayload=null;bankImportFileName='';$('bankExcelFile').value='';$('bankFileName').classList.add('hidden');$('bankPreview').classList.add('hidden');$('bankImportStatus').className='bank-status';$('bankImportStatus').textContent='Selecciona tu archivo para validar su estructura y mostrar una vista previa.';$('bankImportButton').disabled=true;});
+$('bankClearPreview').addEventListener('click',()=>{bankImportPayload=null;bankImportFileName='';$('bankExcelFile').value='';$('bankFileName').classList.add('hidden');$('bankPreview').classList.add('hidden');$('bankImportStatus').textContent='Selecciona el Excel para validar su estructura.';$('bankImportButton').disabled=true;});
 $('bankImportButton').addEventListener('click',async()=>{
- if(!isNouraAdmin||!bankImportPayload?.length)return toast('No hay un lote válido o falta autorización administrativa.');
- const btn=$('bankImportButton');btn.disabled=true;$('bankImportStatus').className='bank-status';$('bankImportStatus').textContent='Importando el lote en Supabase… No cierres esta página.';
- try{const {data,error}=await db.rpc('noura_import_question_bank',{p_file_name:bankImportFileName,p_cases:bankImportPayload});if(error)throw error;
-  $('bankImportStatus').className='bank-status success';$('bankImportStatus').textContent=`Importación completada: ${data?.cases??'—'} casos y ${data?.questions??'—'} preguntas. Estado: borrador. ID de lote: ${data?.batch_id||'—'}.`;toast('Banco importado como borrador.');bankImportPayload=null;$('bankExcelFile').value='';$('bankImportButton').disabled=true;
- }catch(err){console.error('NOURA import RPC:',err);$('bankImportStatus').className='bank-status error';$('bankImportStatus').textContent='No se importó el lote. Supabase revirtió la operación. Detalle: '+(err.message||'Error desconocido');btn.disabled=false;}
+ if(!isNouraAdmin||!bankImportPayload?.length)return toast('No hay un lote válido o falta autorización.');
+ const btn=$('bankImportButton');btn.disabled=true;$('bankImportStatus').textContent='Importando en Supabase…';
+ try{const {data,error}=await db.rpc('noura_import_question_bank_v2',{p_file_name:bankImportFileName,p_cases:bankImportPayload});if(error)throw error;
+  $('bankImportStatus').className='bank-status success';$('bankImportStatus').textContent=`Importación completada: ${data.cases} casos y ${data.questions} preguntas. Quedaron pendientes de revisión.`;toast('Banco importado.');bankImportPayload=null;$('bankExcelFile').value='';$('bankImportButton').disabled=true;await loadAdminQuestionBank();
+ }catch(err){console.error(err);$('bankImportStatus').className='bank-status error';$('bankImportStatus').textContent='No se importó el lote. Supabase revirtió la operación: '+(err.message||'Error');btn.disabled=false;}
 });
+
+// Banco administrativo: las claves se recuperan solo por RPC protegida para administradores.
+async function loadAdminQuestionBank(){
+ if(!isNouraAdmin)return toast('Esta cuenta no tiene permisos de administración.');
+ $('bankAdminStatusText').textContent='Cargando preguntas…';
+ const {data,error}=await db.rpc('noura_admin_list_question_bank');
+ if(error){$('bankAdminStatusText').textContent='No se pudo cargar el banco: '+error.message;return;}
+ adminBankRows=Array.isArray(data)?data:(data?.questions||[]);
+ const specialties=[...new Set(adminBankRows.map(x=>x.specialty).filter(Boolean))].sort();
+ $('bankAdminSpecialty').innerHTML='<option value="all">Todas las especialidades</option>'+specialties.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+ $('bankAdminStatusText').textContent=`${adminBankRows.length} preguntas cargadas. Pendientes: ${adminBankRows.filter(q=>q.review_status==='pending').length} · Validadas: ${adminBankRows.filter(q=>q.review_status==='validated').length} · Publicadas: ${adminBankRows.filter(q=>q.review_status==='published').length}.`;
+ renderAdminQuestionBankList();
+}
+function renderAdminQuestionBankList(){
+ const host=$('bankAdminList');if(!host)return;
+ const q=($('bankAdminSearch').value||'').toLowerCase().trim(),status=$('bankAdminStatus').value,spec=$('bankAdminSpecialty').value;
+ const rows=adminBankRows.filter(x=>(status==='all'||x.review_status===status)&&(spec==='all'||x.specialty===spec)&&(!q||`${x.case_code} ${x.specialty} ${x.topic} ${x.stem} ${x.external_question_id}`.toLowerCase().includes(q)));
+ const grouped=new Map();rows.forEach(x=>{const k=x.case_id||x.case_code;if(!grouped.has(k))grouped.set(k,[]);grouped.get(k).push(x);});
+ host.innerHTML=grouped.size?[...grouped.entries()].map(([caseId,items])=>`<div class="bank-case"><div class="fc-admin-actions" style="justify-content:space-between"><div><strong>${esc(items[0].case_code)} · ${esc(items[0].title||'Caso clínico')}</strong><div class="mini">${esc(items[0].specialty)} · ${esc(items[0].topic)} · ${esc(items[0].difficulty||'')}</div></div><span class="bank-state ${items.every(x=>x.review_status==='published')?'published':''}">${items.every(x=>x.review_status==='published')?'Publicado':items.some(x=>x.review_status==='validated')?'En validación':'Pendiente'}</span></div>${items.map(x=>`<div class="bank-question-row"><div><strong>${esc(x.external_question_id||x.id)}</strong><div class="mini">${esc((x.stem||'').slice(0,150))}${(x.stem||'').length>150?'…':''}</div><span class="bank-state ${x.review_status}">${x.review_status==='published'?'Publicada':x.review_status==='validated'?'Validada':'Pendiente'}</span></div><button class="btn secondary" type="button" data-bank-edit="${x.id}">Abrir / editar</button></div>`).join('')}</div>`).join(''):'<div class="empty">No hay preguntas con esos filtros.</div>';
+ host.querySelectorAll('[data-bank-edit]').forEach(b=>b.onclick=()=>openAdminQuestionEditor(b.dataset.bankEdit));
+}
+function openAdminQuestionEditor(id){
+ const q=adminBankRows.find(x=>x.id===id);if(!q)return;adminEditingQuestion=q;
+ const opts=(q.options||[]).slice().sort((a,b)=>a.sort_order-b.sort_order);
+ $('bankEditorHost').innerHTML=`<div class="card" style="margin-top:18px;border-color:var(--gold)"><div class="eyebrow">Edición administrativa</div><h3 class="title" style="font-size:25px;margin:8px 0">${esc(q.external_question_id||q.id)}</h3><p class="mini">${esc(q.case_code)} · ${esc(q.specialty)} · ${esc(q.topic)}</p><div class="bank-editor">
+ <div class="field full"><label>Enunciado</label><textarea id="beStem">${esc(q.stem||'')}</textarea></div>
+ <div class="field"><label>Dificultad</label><select id="beDifficulty"><option ${q.difficulty==='Baja'?'selected':''}>Baja</option><option ${q.difficulty==='Media'?'selected':''}>Media</option><option ${q.difficulty==='Alta'?'selected':''}>Alta</option></select></div>
+ <div class="field"><label>Perla ENARM</label><textarea id="bePearl">${esc(q.pearl||'')}</textarea></div>
+ <div class="field full"><label>Explicación general</label><textarea id="beExplanation">${esc(q.explanation||'')}</textarea></div>
+ ${opts.map((o,i)=>`<div class="field full"><label>Opción ${esc(o.option_key)} ${q.correct_option_id===o.id?'· Correcta':''}</label><div class="bank-option-edit"><input type="radio" name="beCorrect" value="${o.id}" ${q.correct_option_id===o.id?'checked':''}><input type="text" id="beOpt${i}" value="${esc(o.option_text)}"><span class="mini">${esc(o.option_key)}</span></div><label>Retroalimentación del distractor</label><textarea id="beFeedback${i}">${esc(o.feedback||'')}</textarea></div>`).join('')}
+ <div class="field"><label>Fuente</label><input id="beSource" value="${esc(q.source_title||q.source_ref||'')}"></div>
+ <div class="field"><label>Referencia</label><input id="beReference" value="${esc(q.source_ref||'')}"></div>
+ </div><div class="bank-actions"><button class="btn" id="beSave">Guardar cambios</button><button class="btn secondary" id="beValidate">Marcar como validada</button><button class="btn" id="bePublish" ${q.review_status!=='validated'?'disabled':''}>Publicar para estudiantes</button><button class="btn ghost" id="beClose">Cerrar</button></div><p class="mini" style="margin-top:10px">Estado clínico de la fuente: ${esc(q.clinical_validation||'No especificado')}. La edición no modifica automáticamente la validación de la fuente.</p></div>`;
+ $('beSave').onclick=saveAdminQuestion;
+ $('beValidate').onclick=()=>setAdminQuestionStatus(q.id,'validated');
+ $('bePublish').onclick=()=>setAdminQuestionStatus(q.id,'published');
+ $('beClose').onclick=()=>{$('bankEditorHost').innerHTML='';adminEditingQuestion=null;};
+}
+async function saveAdminQuestion(){
+ const q=adminEditingQuestion;if(!q)return;
+ const options=(q.options||[]).slice().sort((a,b)=>a.sort_order-b.sort_order).map((o,i)=>({id:o.id,text:$('beOpt'+i).value,correct:document.querySelector('input[name="beCorrect"]:checked')?.value===o.id,feedback:$('beFeedback'+i).value}));
+ const patch={stem:$('beStem').value,explanation:$('beExplanation').value,pearl:$('bePearl').value,difficulty:$('beDifficulty').value,source_title:$('beSource').value,source_ref:$('beReference').value,options};
+ const {error}=await db.rpc('noura_admin_update_question',{p_question_id:q.id,p_patch:patch});
+ if(error)return toast('No se guardó: '+error.message);
+ toast('Cambios guardados.');await loadAdminQuestionBank();openAdminQuestionEditor(q.id);
+}
+async function setAdminQuestionStatus(id,status){
+ const confirmText=status==='published'?'¿Publicar esta pregunta para los estudiantes? Solo será visible en simuladores.':status==='validated'?'¿Marcar esta pregunta como validada?':'¿Cambiar estado?';
+ if(!confirm(confirmText))return;
+ const {data,error}=await db.rpc('noura_admin_set_question_status',{p_question_id:id,p_status:status});
+ if(error)return toast('No se pudo cambiar el estado: '+error.message);
+ toast(status==='published'?'Pregunta publicada para estudiantes.':status==='validated'?'Pregunta validada.':'Estado actualizado.');
+ await loadAdminQuestionBank();openAdminQuestionEditor(id);
+}
 
 async function checkNouraAdmin(){
   const navButton=$('adminNavButton');
@@ -1504,15 +1572,19 @@ function renderAdminSections(section){
  const allowed=['overview','subscriptions','codes','library','simulators'];
  if(!allowed.includes(section))section='overview';
  document.querySelectorAll('[data-admin-panel]').forEach(panel=>panel.classList.toggle('hidden',panel.dataset.adminPanel!==section));
- const labels={overview:'Panel general',subscriptions:'Suscripciones y pagos',codes:'Códigos y descuentos',library:'Biblioteca y materiales',simulators:'Simuladores'};
+ const labels={overview:'Panel general',subscriptions:'Suscripciones y pagos',codes:'Códigos y descuentos',library:'Biblioteca y materiales',simulators:'Biblioteca y materiales · Simuladores'};
  $('adminBreadcrumb').textContent=labels[section];
 }
 document.querySelectorAll('[data-admin-open]').forEach(button=>button.addEventListener('click',()=>renderAdminSections(button.dataset.adminOpen)));
-document.querySelectorAll('[data-admin-back]').forEach(button=>button.addEventListener('click',()=>renderAdminSections('overview')));
+document.querySelectorAll('[data-admin-back]').forEach(button=>button.addEventListener('click',()=>renderAdminSections(button.dataset.adminBackTo||'overview')));
 $('adminNavButton').addEventListener('click',()=>showView('admin'));
 $('adminOpenFlashcards').addEventListener('click',()=>{showView('flashcards');setFcAdminMode(true)});
 $('adminOpenOtherMaterials').addEventListener('click',()=>toast('Otros materiales estará disponible próximamente.'));
-$('adminGoImport').addEventListener('click',()=>renderAdminSections('library'));
+$('adminOpenSimulators').addEventListener('click',()=>{renderAdminSections('simulators');loadAdminQuestionBank();});
+$('bankRefresh').addEventListener('click',loadAdminQuestionBank);
+$('bankAdminSearch').addEventListener('input',renderAdminQuestionBankList);
+$('bankAdminStatus').addEventListener('change',renderAdminQuestionBankList);
+$('bankAdminSpecialty').addEventListener('change',renderAdminQuestionBankList);
 $('fcBackToLibrary').addEventListener('click',()=>{setFcAdminMode(false);showView('admin');renderAdminSections('library');});
 $('fcBackToAdminHome').addEventListener('click',()=>{setFcAdminMode(false);showView('admin');renderAdminSections('overview');});
 $('fcStudentMode').addEventListener('click',()=>setFcAdminMode(false));
