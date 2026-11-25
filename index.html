@@ -1136,10 +1136,10 @@ function renderSimulatorQuestion(){
   $('simulatorQuestionNav').innerHTML=simulatorQuestions.map((x,i)=>`<button type="button" class="${simulatorSelections.has(x.id)?'answered':''} ${i>=pageStart&&i<pageEnd?'current':''}" data-sim-jump="${i}" aria-label="Ir a pregunta ${i+1}">${i+1}</button>`).join('');
   $('simulatorQuestionNav').querySelectorAll('[data-sim-jump]').forEach(b=>b.onclick=()=>{simulatorIndex=Number(b.dataset.simJump);renderSimulatorQuestion();});
   const page=simulatorQuestions.slice(pageStart,pageEnd);
-  $('simulatorQuestionCard').innerHTML=`<div class="sim-question-stack">${page.map((q,offset)=>{const globalIndex=pageStart+offset,selected=simulatorSelections.get(q.id);return `<article class="card sim-question-card" data-sim-card="${globalIndex}"><div class="meta"><span class="tag">Pregunta ${globalIndex+1} de ${total}</span><span class="tag">${esc(q.topics?.specialties?.name||'ENARM')}</span><span class="tag">${esc(q.topics?.name||'Tema')}</span><span class="tag">Dificultad ${esc(q.difficulty||'Media')}</span></div><div class="eyebrow">Caso clínico</div>${q.clinical_cases?.case_text?`<div class="stem" style="margin:12px 0 16px">${esc(q.clinical_cases.case_text).split(String.fromCharCode(10)).map(x=>`<p>${x}</p>`).join("")}</div>`:""}<div class="eyebrow">Pregunta</div><div class="stem" style="margin:12px 0 20px">${q.stem.split('\n').map(x=>`<p>${esc(x)}</p>`).join('')}</div>${(q.question_options||[]).slice().sort((a,b)=>a.sort_order-b.sort_order).map(o=>`<button type="button" class="sim-option ${selected===o.id?'selected':''}" data-sim-option="${o.id}" data-sim-qid="${q.id}"><span class="key">${esc(o.option_key)}</span>${esc(o.option_text)}</button>`).join('')}</article>`}).join('')}</div>`;
+  $('simulatorQuestionCard').innerHTML=`<div class="sim-question-stack">${page.map((q,offset)=>{const globalIndex=pageStart+offset,selected=simulatorSelections.get(q.id);return `<article class="card sim-question-card" data-sim-card="${globalIndex}"><div class="meta" style="display:flex;justify-content:space-between;align-items:center"><span class="tag">Pregunta ${globalIndex+1}</span><span class="tag">Dificultad ${esc(q.difficulty||'Media')}</span></div><div class="eyebrow">Caso clínico</div>${q.clinical_cases?.case_text?`<div class="stem" style="margin:12px 0 16px">${esc(q.clinical_cases.case_text).split(String.fromCharCode(10)).map(x=>`<p>${x}</p>`).join("")}</div>`:""}<div class="eyebrow">Pregunta</div><div class="stem" style="margin:12px 0 20px">${q.stem.split('\n').map(x=>`<p>${esc(x)}</p>`).join('')}</div>${(q.question_options||[]).slice().sort((a,b)=>a.sort_order-b.sort_order).map(o=>`<button type="button" class="sim-option ${selected===o.id?'selected':''}" data-sim-option="${o.id}" data-sim-qid="${q.id}"><span class="key">${esc(o.option_key)}</span>${esc(o.option_text)}</button>`).join('')}</article>`}).join('')}</div>`;
   $('simulatorQuestionCard').querySelectorAll('[data-sim-option]').forEach(b=>b.onclick=()=>{simulatorSelections.set(b.dataset.simQid,b.dataset.simOption);renderSimulatorQuestion();});
   $('simPrevBtn').disabled=pageStart===0;
-  $('simNextBtn').textContent=pageEnd===total?'Ir a revisión final →':'Siguiente 3 preguntas →';
+  $('simNextBtn').textContent=pageEnd===total?'Ir a revisión final →':'Siguiente página →';
   $('simUnansweredHint').textContent=`Respondidas ${simulatorSelections.size} de ${total}. Puedes cambiar cualquier respuesta antes de terminar.`;
 }
 $('simPrevBtn').addEventListener('click',()=>{if(simulatorIndex>0){simulatorIndex=Math.max(0,simulatorIndex-SIMULATOR_PAGE_SIZE);renderSimulatorQuestion();window.scrollTo({top:0,behavior:'smooth'});}});
@@ -1504,11 +1504,9 @@ function renderAdminQuestionBankList(){
  const q=normalizeSearch($('bankAdminSearch').value),status=$('bankAdminStatus').value,spec=$('bankAdminSpecialty').value;
  document.querySelectorAll('[data-bank-tab]').forEach(b=>b.classList.toggle('active',b.dataset.bankTab===bankAdminTab));
  const rows=adminBankRows.filter(x=>{
-   const searchable=[
-     x.case_code,x.title,x.case_text,x.case_title,x.specialty,x.topic,x.subtopic,x.stem,
-     x.external_question_id,x.source_ref,x.source_title,x.source_section,x.explanation,x.pearl,
-     ...(x.options||[]).map(o=>o.option_text)
-   ].join(' ');
+   // El RPC puede entregar tema/caso/fuente como objetos anidados.
+   // Serializar el registro completo evita perder esos campos en la búsqueda.
+   const searchable=JSON.stringify(x);
    const tabMatch=bankAdminTab==='imported'
      ? true
      : bankAdminTab==='correction'
@@ -1656,6 +1654,14 @@ $('adminOpenOtherMaterials').addEventListener('click',()=>toast('Otros materiale
 $('adminOpenSimulators').addEventListener('click',()=>{renderAdminSections('simulators');loadAdminQuestionBank();});
 $('bankRefresh').addEventListener('click',loadAdminQuestionBank);
 $('bankAdminSearch').addEventListener('input',renderAdminQuestionBankList);
+$('bankAdminSearch').addEventListener('keydown',event=>{
+ if(event.key==='Enter'){
+   event.preventDefault();
+   // Enter aplica la búsqueda y lleva al listado de coincidencias.
+   renderAdminQuestionBankList();
+   $('bankAdminList')?.scrollIntoView({behavior:'smooth',block:'start'});
+ }
+});
 document.querySelectorAll('[data-bank-tab]').forEach(button=>button.addEventListener('click',()=>{
  bankAdminTab=button.dataset.bankTab;
  $('bankAdminStatus').value='all';
