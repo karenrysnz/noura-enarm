@@ -408,6 +408,17 @@ z-index: 20;
 .error-rank-row{display:grid;grid-template-columns:minmax(145px,1fr) minmax(90px,1.4fr) 42px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
 .error-rank-row:last-child{border-bottom:0}.error-rank-name{font-size:13px;font-weight:800}.error-rank-count{font-size:11px;color:var(--muted);margin-top:3px}.error-rank-row .bar{height:9px}.history-open{width:100%;border:0;background:transparent;text-align:left;color:inherit;padding:0;display:flex;align-items:center;justify-content:space-between;gap:12px}.history-open:hover strong{color:var(--gold)}.sim-review-option{border:1px solid var(--line);text-align:justify;text-justify:inter-word;border-radius:13px;background:#fff;padding:13px;margin:9px 0;line-height:1.55}.sim-review-option.correct-option{border-color:var(--green);background:#effaf5}.sim-review-option.wrong-option{border-color:var(--red);background:#fff0f0}.sim-review-option .option-feedback{margin:8px 0 0 35px;color:#555;font-size:13px}.sim-review-option .option-feedback strong{font-weight:950}.sim-review-option .option-letter{font-weight:950!important;font-size:14px}.error-category-tag{display:inline-flex;padding:6px 9px;border-radius:999px;background:#fff4df;color:#855d16;font-size:11px;font-weight:850;margin:8px 0 0 35px}.error-category-tag.committed{background:#fff0f0;color:#a12f2f;border:1px solid #e8b8b8}.error-category-tag.explains{background:#f7f1e5;color:#76551d}
 @media(max-width:650px){.error-rank-row{grid-template-columns:minmax(110px,1fr) minmax(65px,1fr) 38px}}
+
+/* Calendario inteligente: revisión y confirmación */
+.calendar-ai-backdrop{position:fixed;inset:0;z-index:10020;background:rgba(20,17,13,.62);display:none;align-items:center;justify-content:center;padding:18px}
+.calendar-ai-backdrop.open{display:flex}
+.calendar-ai-dialog{width:min(820px,100%);max-height:90vh;overflow:auto;background:var(--cream);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 24px 80px rgba(0,0,0,.28)}
+.calendar-ai-list{display:grid;gap:8px;margin:16px 0}
+.calendar-ai-row{display:grid;grid-template-columns:130px minmax(0,1fr);gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.calendar-ai-row small{display:block;color:var(--muted);margin-top:4px}
+.calendar-ai-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:18px}
+@media(max-width:600px){.calendar-ai-row{grid-template-columns:1fr}.calendar-ai-dialog{padding:16px}}
+
 </style>
 </head>
 <body>
@@ -515,7 +526,7 @@ z-index: 20;
           </div>
           <div class="onboarding-card">
             <div class="eyebrow">Tu curso</div><h3 style="font:500 27px Georgia,serif;margin:8px 0">Sube tu calendario</h3><p>Más adelante NOURA | ENARM podrá leerlo para adaptar tu plan a lo que toca estudiar cada día.</p>
-            <label class="upload-zone" for="obCalendar" style="display:block;margin-top:15px;cursor:pointer"><div style="font-size:28px">↥</div><div class="upload-title">Subir calendario del curso</div><div class="upload-meta">PDF, Excel, Word o imagen</div><input id="obCalendar" type="file" accept=".pdf,.xlsx,.xls,.csv,.doc,.docx,.png,.jpg,.jpeg"><div id="obFileChip" class="file-chip hidden">📎 <span></span></div></label>
+            <label class="upload-zone" for="obCalendar" style="display:block;margin-top:15px;cursor:pointer"><div style="font-size:28px">↥</div><div class="upload-title">Subir calendario del curso</div><div class="upload-meta">PDF o imagen PNG/JPG/WEBP</div><input id="obCalendar" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/*"><div id="obFileChip" class="file-chip hidden">📎 <span></span></div></label>
             <div class="tiny-note" style="margin-top:10px">Puedes saltarlo y subirlo después desde tu perfil.</div>
           </div>
         </div>
@@ -613,8 +624,8 @@ z-index: 20;
         <p id="calendarSummary" class="subtle">Tu calendario del curso estará disponible aquí.</p>
         <button class="btn secondary" id="openCalendarBtn" disabled>Ver calendario guardado</button>
         <div class="field" style="margin-top:14px;margin-bottom:6px">
-          <label for="homeCalendarFile">Subir o reemplazar tu calendario (PDF, Excel, Word o imagen)</label>
-          <input id="homeCalendarFile" type="file" accept=".pdf,.xlsx,.xls,.csv,.doc,.docx,.png,.jpg,.jpeg,application/pdf,image/*">
+          <label for="homeCalendarFile">Subir o reemplazar tu calendario (PDF o imagen PNG/JPG/WEBP)</label>
+          <input id="homeCalendarFile" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/*">
         </div>
         <div class="tiny-note" id="homeCalendarHint" style="margin-top:9px">Selecciona tu archivo aquí. Se guardará en tu cuenta y podrás abrirlo desde Inicio o Mi progreso.</div>
       </div>
@@ -911,7 +922,22 @@ z-index: 20;
 </section>
 
 </main>
-</div><div id="toast" class="toast"></div>
+</div>
+<div id="calendarAiModal" class="calendar-ai-backdrop" role="dialog" aria-modal="true" aria-labelledby="calendarAiTitle">
+  <div class="calendar-ai-dialog">
+    <div class="eyebrow">NOURA · CALENDARIO INTELIGENTE</div>
+    <h2 id="calendarAiTitle" class="title" style="font-size:30px;margin:8px 0">Revisa tu calendario</h2>
+    <p id="calendarAiIntro" class="subtle">La IA identificó estas sesiones. Confirma para incorporarlas a tu plan.</p>
+    <div id="calendarAiNotes" class="bank-status" style="display:none"></div>
+    <div id="calendarAiList" class="calendar-ai-list"></div>
+    <div class="calendar-ai-actions">
+      <button type="button" class="btn secondary" id="calendarAiCancel">Cancelar</button>
+      <button type="button" class="btn" id="calendarAiConfirm">Confirmar calendario</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
 <script>
 const SUPABASE_URL='https://smdjwcantfcjbicrltqw.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_E457c6ZdXMIn16I9Ne-uXw_dC61enHU';
@@ -919,6 +945,7 @@ const db=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const $=id=>document.getElementById(id);
 let isSignup=false,currentUser=null,questions=[],currentIndex=0,selectedOption=null,attemptId=null,profile=null,specialtyStats=[];
 let isNouraAdmin=false,fcAdminMode=false,fcUploadQueue=[],fcImageUrls={},bankAdminTab='imported';
+let todayCourseItems=[],pendingCalendarPreview=null;
 const TONES=['Claro y directo','Amable y motivador','Exigente tipo tutor','Breve y al grano'];
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800)}
 function esc(s){return String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\\':'&#92;','"':'&quot;'}[c]))}
@@ -1025,13 +1052,54 @@ const NOURA_MONTHLY_QUOTES={
 };
 function renderMonthlyQuote(){const month=Number(localDay().slice(5,7));const item=NOURA_MONTHLY_QUOTES[month]||NOURA_MONTHLY_QUOTES[11];const addr=profile?.preferred_address||'neutral';const ready=addr==='femenino'?'estás lista':addr==='masculino'?'estás listo':'tienes todo lo necesario';const quote=item.quote.replace('{ready}',ready);$('monthlyPhraseMonth').textContent=`FRASE DE ${item.month.toUpperCase()}`;$('monthlyPhraseText').textContent=quote;}
 function renderIdentityDashboard(){if(!profile)return;renderMonthlyQuote();const addr=profile.preferred_address||'neutral';const greeting=addr==='femenino'?'Bienvenida':addr==='masculino'?'Bienvenido':'Hola';const nick=(profile.preferred_name||currentUser?.user_metadata?.full_name||'').trim();$('homeGreeting').innerHTML=`${greeting}${nick?', ':''}<span>${esc(nick||'a tu preparación')}</span>`;$('homeIdentitySummary').textContent=`Objetivo: ${profile.target_specialty||'Preparación ENARM'} · ${profile.daily_goal||30} preguntas al día · ${profile.available_minutes||90} minutos · ${profile.preferred_study_time||'horario flexible'}.`;const exam=profile.exam_date?new Date(profile.exam_date+'T12:00:00'):null;$('daysToExam').textContent=exam?Math.max(0,Math.ceil((exam-new Date())/86400000)):'—';$('availableTimeHome').textContent=(profile.available_minutes||90)+'m';$('activeDaysCount').textContent=(profile.active_days||[]).length;$('studyDaysCount').textContent=(profile.study_days||[]).length;const hasCalendar=!!profile.course_calendar_path;$('calendarSummary').textContent=hasCalendar?`Calendario disponible: ${profile.course_calendar_name||'Archivo del curso'}. Puedes abrirlo o reemplazarlo desde aquí.`:'Todavía no has subido un calendario. Usa “Subir / actualizar calendario” para agregarlo.';$('progressCalendarSummary').textContent=$('calendarSummary').textContent;$('openCalendarBtn').disabled=!hasCalendar;$('openProgressCalendar').disabled=!hasCalendar;$('homeCalendarHint').textContent=hasCalendar?'Archivo guardado: '+(profile.course_calendar_name||'Calendario del curso')+'. Puedes reemplazarlo cuando quieras.':'Aún no hay un archivo guardado. Selecciona tu PDF, Excel, Word o imagen para subirlo.';}
+
+function closeCalendarAiModal(){ $('calendarAiModal').classList.remove('open'); pendingCalendarPreview=null; }
+function openCalendarAiPreview(data,storagePath,fileName){
+ const rows=Array.isArray(data?.schedule)?data.schedule:[];
+ if(!rows.length){toast('No encontré fechas y temas claros en el archivo. Revisa que el calendario tenga fechas legibles.');return;}
+ pendingCalendarPreview={rows,storagePath,fileName};
+ $('calendarAiIntro').textContent=`Encontré ${rows.length} sesión(es) en ${fileName}. Revisa la información antes de guardarla.`;
+ const notes=Array.isArray(data.notes)?data.notes:[];
+ $('calendarAiNotes').style.display=notes.length?'block':'none';
+ $('calendarAiNotes').textContent=notes.join(' · ');
+ $('calendarAiList').innerHTML=rows.map((r,i)=>`<div class="calendar-ai-row"><div><strong>${esc(new Date(r.study_date+'T12:00:00').toLocaleDateString('es-MX',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}))}</strong><small>${r.confidence==='low'?'Lectura por revisar':r.confidence==='medium'?'Lectura probable':'Lectura clara'}</small></div><div><strong>${esc(r.title)}</strong>${r.details?`<small>${esc(r.details)}</small>`:''}</div></div>`).join('');
+ $('calendarAiModal').classList.add('open');
+}
+async function analyzeCourseCalendar(storagePath,file){
+ const ext=(file.name.split('.').pop()||'').toLowerCase();
+ if(!['pdf','png','jpg','jpeg','webp'].includes(ext)){toast('Por ahora el calendario inteligente acepta PDF o imágenes PNG/JPG/WEBP.');return;}
+ toast('La IA está leyendo tu calendario…');
+ try{
+  const {data,error}=await db.functions.invoke('analyze-course-calendar',{body:{storagePath,fileName:file.name,mimeType:file.type||'application/octet-stream'}});
+  if(error)throw error;
+  if(!data?.ok)throw new Error(data?.error||'No se pudo analizar el calendario.');
+  openCalendarAiPreview(data,storagePath,file.name);
+ }catch(err){console.error('Análisis de calendario:',err);toast('El archivo quedó guardado, pero no se pudo analizar: '+(err.message||'Error de conexión'));}
+}
+async function confirmCalendarAi(){
+ if(!pendingCalendarPreview)return;
+ const {rows,storagePath}=pendingCalendarPreview;
+ const records=rows.map((r,i)=>({user_id:currentUser.id,study_date:r.study_date,title:r.title.trim(),details:r.details||null,source_file:storagePath,sort_order:i}));
+ const {error:insertError}=await db.from('course_schedule_items').insert(records);
+ if(insertError){console.error(insertError);toast('No pude guardar los temas: '+insertError.message);return;}
+ // Tras insertar el calendario nuevo, retiramos solo las filas de calendarios importados anteriores.
+ const {error:cleanupError}=await db.from('course_schedule_items').delete().eq('user_id',currentUser.id).not('source_file','is',null).neq('source_file',storagePath);
+ if(cleanupError)console.warn('El calendario nuevo se guardó, pero quedaron filas anteriores:',cleanupError.message);
+ await loadTodayCourseItems();
+ renderToday();
+ closeCalendarAiModal();
+ toast('Calendario confirmado. Tu misión de hoy ya está actualizada ✦');
+}
+$('calendarAiCancel').addEventListener('click',closeCalendarAiModal);
+$('calendarAiConfirm').addEventListener('click',confirmCalendarAi);
+$('calendarAiModal').addEventListener('click',e=>{if(e.target===$('calendarAiModal'))closeCalendarAiModal();});
 async function openCourseCalendar(){if(!profile?.course_calendar_path)return toast('Primero sube tu calendario del curso.');const tab=window.open('about:blank','_blank');const {data,error}=await db.storage.from('course-calendars').createSignedUrl(profile.course_calendar_path,3600);if(error||!data?.signedUrl){if(tab)tab.close();return toast('No pude abrir el calendario: '+(error?.message||'URL no disponible'));}if(tab)tab.location.href=data.signedUrl;else window.location.href=data.signedUrl;}
-async function uploadCourseCalendar(file){if(!file)return;const clean=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');const path=`${currentUser.id}/${Date.now()}-${clean}`;toast('Subiendo tu calendario…');const {error:uploadError}=await db.storage.from('course-calendars').upload(path,file,{upsert:true,contentType:file.type||undefined});if(uploadError)return toast('No pude subir el calendario: '+uploadError.message);const patch={course_calendar_path:path,course_calendar_name:file.name,updated_at:new Date().toISOString()};const {error:updateError}=await db.from('profiles').update(patch).eq('id',currentUser.id);if(updateError)return toast('El archivo se subió, pero no pude guardar su referencia: '+updateError.message);profile={...profile,...patch};renderIdentityDashboard();$('profileCalendarName').textContent='Actual: '+file.name;toast('Calendario guardado correctamente ✦');}
+async function uploadCourseCalendar(file){if(!file)return;const clean=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');const path=`${currentUser.id}/${Date.now()}-${clean}`;toast('Subiendo tu calendario…');const {error:uploadError}=await db.storage.from('course-calendars').upload(path,file,{upsert:true,contentType:file.type||undefined});if(uploadError)return toast('No pude subir el calendario: '+uploadError.message);const patch={course_calendar_path:path,course_calendar_name:file.name,updated_at:new Date().toISOString()};const {error:updateError}=await db.from('profiles').update(patch).eq('id',currentUser.id);if(updateError)return toast('El archivo se subió, pero no pude guardar su referencia: '+updateError.message);profile={...profile,...patch};renderIdentityDashboard();$('profileCalendarName').textContent='Actual: '+file.name;toast('Calendario guardado correctamente ✦');await analyzeCourseCalendar(path,file);}
 $('openCalendarBtn').onclick=openCourseCalendar;$('openProgressCalendar').onclick=openCourseCalendar;
 if($('uploadCalendarBtn'))$('uploadCalendarBtn').onclick=()=>$('homeCalendarFile').click();$('uploadProgressCalendar').onclick=()=>$('homeCalendarFile').click();
 $('homeCalendarFile').addEventListener('change',async e=>{const file=e.target.files?.[0];if(file)await uploadCourseCalendar(file);e.target.value='';});
 async function getDataset(){const {data:answers}=await db.from('attempt_answers').select('id,attempt_id,question_id,is_correct,answered_at').order('answered_at',{ascending:false});const {data:questionsData}=await db.from('questions').select('id,topic_id');const {data:topics}=await db.from('topics').select('id,name,specialty_id,specialties(id,name)');const {data:attempts}=await db.from('attempts').select('id,total_questions,answered_questions,correct_answers,started_at,completed_at').order('started_at',{ascending:false});return {answers:answers||[],questions:questionsData||[],topics:topics||[],attempts:attempts||[]}}
-async function loadDashboard(){const d=await getDataset();const {answers,questions:qs,topics,attempts}=d;const correct=answers.filter(a=>a.is_correct).length;$('statAnswered').textContent=answers.length;$('statAccuracy').textContent=(answers.length?Math.round(correct/answers.length*100):0)+'%';$('statAttempts').textContent=attempts.length;buildSpecialtyStats(answers,qs,topics);renderToday();renderIdentityDashboard();}
+async function loadDashboard(){await loadTodayCourseItems();const d=await getDataset();const {answers,questions:qs,topics,attempts}=d;const correct=answers.filter(a=>a.is_correct).length;$('statAnswered').textContent=answers.length;$('statAccuracy').textContent=(answers.length?Math.round(correct/answers.length*100):0)+'%';$('statAttempts').textContent=attempts.length;buildSpecialtyStats(answers,qs,topics);renderToday();renderIdentityDashboard();}
 const ENARM_CORE_AREAS=[
  {key:'mi',name:'Medicina Interna',topics:[
   ['Diabetes mellitus y complicaciones',6,['diabetes mellitus','DM2','diabetes y complicaciones','CAD','EHH']],
@@ -1119,7 +1187,33 @@ function renderCoreAreaDetail(el,area){
  const ordered=[...area.topicStats].sort((a,b)=>{if(a.total<5&&b.total>=5)return 1;if(b.total<5&&a.total>=5)return -1;return a.pct-b.pct});
  el.innerHTML=`<div class="topic-detail-head"><div><div class="eyebrow">Desglose por tema</div><strong>${esc(area.name)}</strong></div><span class="topic-status status-${area.status}">${area.total<5?'Datos insuficientes':area.pct+'% global'}</span></div>${ordered.map((t,i)=>{const label=t.status==='gray'?'Datos insuficientes':t.status==='green'?'Dominado':t.status==='yellow'?'Reforzar':'Prioridad alta';return `<div class="topic-line"><span class="topic-rank">${i+1}</span><div><div class="topic-name">${esc(t.name)}</div><div class="topic-meta">Top ENARM 2024–2026 · Referencia 2026: ×${t.freq} · ${t.correct}/${t.total} aciertos · ${t.errors} errores</div><div class="topic-progress"><span class="status-${t.status}" style="width:${t.total>=5?t.pct:0}%"></span></div></div><span class="topic-status status-${t.status}">${t.total>=5?t.pct+'%':label}</span></div>`}).join('')}<div class="topic-detail-note">Temas seleccionados según los rankings y comparativos de ENARM 2024, 2025 y 2026 compartidos. Se ordenan aquí por el rendimiento individual. El color requiere al menos 5 respuestas por tema. Las respuestas y porcentajes corresponden exclusivamente a esta cuenta.</div>`;
 }
-function renderToday(){if(!specialtyStats.length){$('todayTitle').textContent=profile?.onboarding_completed?`Hoy: ${profile?.daily_goal||30} preguntas · ${profile?.topic_goal||1} tema.`:'Primero construyamos tu mapa.';$('todayText').textContent=profile?.onboarding_completed?`NOURA | ENARM ajustará la carga a tus ${profile?.available_minutes||90} minutos, ${profile?.days_per_week||6} días por semana y horario de ${profile?.preferred_study_time||'estudio flexible'}. Prioridad: ${profile?.focus_mode==='curso'?'tu curso':profile?.focus_mode==='prioridades'?'tus temas prioritarios':'tus errores y áreas débiles'}.`:'Haz tu primera sesión para que NOURA | ENARM pueda empezar a personalizar tu plan.';$('progressToday').textContent=profile?.onboarding_completed?`Tu misión: ${profile?.daily_goal||30} preguntas + ${profile?.topic_goal||1} tema.`:'Contesta preguntas para desbloquear tu plan.';return}const target=(profile?.target_specialty||'').toLowerCase();const chosen=specialtyStats.find(x=>x.name.toLowerCase().includes(target)||target.includes(x.name.toLowerCase()))||specialtyStats[0];$('todayTitle').textContent=`Hoy te toca priorizar ${chosen.name}.`;$('todayText').textContent=`Tu rendimiento en esta área es ${chosen.pct}% (${chosen.correct}/${chosen.total}). Tu plan considera ${profile?.daily_goal||30} preguntas, ${profile?.topic_goal||1} tema y ${profile?.available_minutes||90} minutos. Método: ${(profile?.learning_preferences||['preguntas']).join(', ')}.`;$('progressToday').textContent=`Hoy: ${profile?.daily_goal||30} preguntas · ${profile?.topic_goal||1} tema · ${profile?.available_minutes||90} min · ${profile?.preferred_study_time||'horario flexible'}.`}
+function renderToday(){
+ const courseItems=todayCourseItems||[];
+ if(courseItems.length){
+  const first=courseItems[0];
+  $('todayTitle').textContent=`Hoy te toca estudiar: ${first.title}.`;
+  $('todayText').textContent=courseItems.map(x=>[x.title,x.details].filter(Boolean).join(' · ')).join(' | ')+` Tu sesión considera ${profile?.daily_goal||30} preguntas y ${profile?.available_minutes||90} minutos.`;
+  $('progressToday').textContent=`Hoy: ${courseItems.map(x=>x.title).join(', ')} · ${profile?.daily_goal||30} preguntas · ${profile?.available_minutes||90} min.`;
+  return;
+ }
+ if(!specialtyStats.length){
+  $('todayTitle').textContent=profile?.onboarding_completed?`Hoy te toca estudiar: ${profile?.daily_goal||30} preguntas y ${profile?.topic_goal||1} tema.`:'Primero construyamos tu mapa.';
+  $('todayText').textContent=profile?.onboarding_completed?`NOURA | ENARM ajustará la carga a tus ${profile?.available_minutes||90} minutos, ${profile?.days_per_week||6} días por semana y horario de ${profile?.preferred_study_time||'estudio flexible'}. Prioridad: ${profile?.focus_mode==='curso'?'tu curso':profile?.focus_mode==='prioridades'?'tus temas prioritarios':'tus errores y áreas débiles'}.`:'Haz tu primera sesión para que NOURA | ENARM pueda empezar a personalizar tu plan.';
+  $('progressToday').textContent=profile?.onboarding_completed?`Tu misión: ${profile?.daily_goal||30} preguntas + ${profile?.topic_goal||1} tema.`:'Contesta preguntas para desbloquear tu plan.';
+  return;
+ }
+ const target=(profile?.target_specialty||'').toLowerCase();
+ const chosen=specialtyStats.find(x=>x.name.toLowerCase().includes(target)||target.includes(x.name.toLowerCase()))||specialtyStats[0];
+ $('todayTitle').textContent=`Hoy te toca estudiar: ${chosen.name}.`;
+ $('todayText').textContent=`Tu rendimiento en esta área es ${chosen.pct}% (${chosen.correct}/${chosen.total}). Tu plan considera ${profile?.daily_goal||30} preguntas, ${profile?.topic_goal||1} tema y ${profile?.available_minutes||90} minutos. Método: ${(profile?.learning_preferences||['preguntas']).join(', ')}.`;
+ $('progressToday').textContent=`Hoy: ${profile?.daily_goal||30} preguntas · ${profile?.topic_goal||1} tema · ${profile?.available_minutes||90} min · ${profile?.preferred_study_time||'horario flexible'}.`;
+}
+async function loadTodayCourseItems(){
+ const {data,error}=await db.from('course_schedule_items').select('id,study_date,title,details,source_file,sort_order').eq('user_id',currentUser.id).eq('study_date',localDay()).order('sort_order',{ascending:true});
+ if(error){console.warn('No se pudo cargar el calendario del día:',error.message);todayCourseItems=[];return}
+ todayCourseItems=data||[];
+}
+
 let simulatorQuestions=[],simulatorSelections=new Map(),simulatorIndex=0,simulatorAttemptId=null,simulatorBusy=false;
 const SIMULATOR_PAGE_SIZE=3;
 async function startQuestions(){
@@ -2013,7 +2107,7 @@ function toneHTML(selected){return TONES.map(t=>`<button class="choice ${selecte
 function wireTone(containerId){document.querySelectorAll('#'+containerId+' .choice').forEach(b=>b.onclick=()=>{document.querySelectorAll('#'+containerId+' .choice').forEach(x=>x.classList.remove('active'));b.classList.add('active')})}
 function currentTone(containerId){return document.querySelector('#'+containerId+' .choice.active')?.dataset.tone||TONES[0]}
 async function loadProfileUI(){const p=profile||{};$('toneChoices').innerHTML=toneHTML(p.communication_style||TONES[0]);wireTone('toneChoices');$('profilePreferredName').value=p.preferred_name||'';$('profilePreferredAddress').value=p.preferred_address||'neutral';$('dailyGoal').value=p.daily_goal||40;$('profileTopicGoal').value=p.topic_goal||1;$('profileMinutes').value=p.available_minutes||90;$('profileDays').value=p.days_per_week||6;$('profileStudyTime').value=p.preferred_study_time||'mañana';$('targetSpecialty').value=p.target_specialty||'';$('examDate').value=p.exam_date||'';$('profileFocusTopics').value=(p.focus_topics||[]).join(', ');$('profileFocusMode').value=p.focus_mode||'errores';$('profileCalendarName').textContent=p.course_calendar_name?'Actual: '+p.course_calendar_name:'No hay calendario guardado.';document.querySelectorAll('#profileLearningChoices input').forEach(x=>x.checked=(p.learning_preferences||['preguntas']).includes(x.value));}
-async function saveProfile(){const tone=currentTone('toneChoices');const file=$('profileCalendarFile').files?.[0];let calendarPath=profile.course_calendar_path||null,calendarName=profile.course_calendar_name||null;if(file){const clean=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');calendarPath=`${currentUser.id}/${Date.now()}-${clean}`;const {error:upErr}=await db.storage.from('course-calendars').upload(calendarPath,file,{upsert:true,contentType:file.type||undefined});if(upErr)return toast('No pude subir el calendario: '+upErr.message);calendarName=file.name;}const learning=[...document.querySelectorAll('#profileLearningChoices input:checked')].map(x=>x.value);const patch={preferred_name:$('profilePreferredName').value.trim()||null,preferred_address:$('profilePreferredAddress').value,communication_style:tone,daily_goal:Math.max(5,Math.min(280,Number($('dailyGoal').value||30))),topic_goal:Number($('profileTopicGoal').value||1),available_minutes:Math.max(15,Math.min(600,Number($('profileMinutes').value||90))),days_per_week:Number($('profileDays').value||6),preferred_study_time:$('profileStudyTime').value,learning_preferences:learning.length?learning:['preguntas'],focus_topics:$('profileFocusTopics').value.split(',').map(x=>x.trim()).filter(Boolean),focus_mode:$('profileFocusMode').value,target_specialty:$('targetSpecialty').value.trim()||null,exam_date:$('examDate').value||null,course_calendar_path:calendarPath,course_calendar_name:calendarName,updated_at:new Date().toISOString()};const {error}=await db.from('profiles').update(patch).eq('id',currentUser.id);if(error)return toast(error.message);profile={...profile,...patch};$('statGoal').textContent=patch.daily_goal;renderIdentityDashboard();renderToday();toast('Configuración guardada y aplicada');}
+async function saveProfile(){const tone=currentTone('toneChoices');const file=$('profileCalendarFile').files?.[0];let calendarPath=profile.course_calendar_path||null,calendarName=profile.course_calendar_name||null;if(file){const clean=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');calendarPath=`${currentUser.id}/${Date.now()}-${clean}`;const {error:upErr}=await db.storage.from('course-calendars').upload(calendarPath,file,{upsert:true,contentType:file.type||undefined});if(upErr)return toast('No pude subir el calendario: '+upErr.message);calendarName=file.name;}const learning=[...document.querySelectorAll('#profileLearningChoices input:checked')].map(x=>x.value);const patch={preferred_name:$('profilePreferredName').value.trim()||null,preferred_address:$('profilePreferredAddress').value,communication_style:tone,daily_goal:Math.max(5,Math.min(280,Number($('dailyGoal').value||30))),topic_goal:Number($('profileTopicGoal').value||1),available_minutes:Math.max(15,Math.min(600,Number($('profileMinutes').value||90))),days_per_week:Number($('profileDays').value||6),preferred_study_time:$('profileStudyTime').value,learning_preferences:learning.length?learning:['preguntas'],focus_topics:$('profileFocusTopics').value.split(',').map(x=>x.trim()).filter(Boolean),focus_mode:$('profileFocusMode').value,target_specialty:$('targetSpecialty').value.trim()||null,exam_date:$('examDate').value||null,course_calendar_path:calendarPath,course_calendar_name:calendarName,updated_at:new Date().toISOString()};const {error}=await db.from('profiles').update(patch).eq('id',currentUser.id);if(error)return toast(error.message);profile={...profile,...patch};$('statGoal').textContent=patch.daily_goal;renderIdentityDashboard();await loadTodayCourseItems();renderToday();toast('Configuración guardada y aplicada');if(file)await analyzeCourseCalendar(calendarPath,file);}
 $('restartOnboarding').onclick=()=>{obStep=0;$('onboardingView').classList.remove('hidden');$('appView').classList.add('hidden');startOnboarding()};$('saveProfile').onclick=saveProfile;
 async function sendAI(text){const input=$('aiInput');const p=(text||input.value).trim();if(!p)return;const box=$('messages');box.insertAdjacentHTML('beforeend',`<div class="bubble me">${esc(p)}</div>`);input.value='';const thinkingId='ai-thinking-'+Date.now();box.insertAdjacentHTML('beforeend',`<div id="${thinkingId}" class="bubble ai">Estoy pensando…</div>`);box.scrollTop=box.scrollHeight;try{const history=[...box.querySelectorAll('.bubble')].slice(-12).filter(x=>x.id!==thinkingId).map(x=>({role:x.classList.contains('me')?'user':'assistant',content:x.innerText}));const {data,error}=await db.functions.invoke('enarmia-ai',{body:{mode:'tutor',message:p,history}});if(error)throw error;const reply=data?.reply||'No pude generar una respuesta ahora.';$(thinkingId).outerHTML=`<div class="bubble ai">${esc(reply).replace(/\n/g,'<br>')}</div>`}catch(err){console.error(err);$(thinkingId).outerHTML=`<div class="bubble ai">No pude conectar con el tutor IA todavía. ${esc(err.message||'Inténtalo de nuevo en unos segundos.')}</div>`}box.scrollTop=box.scrollHeight}
 $('aiSend').onclick=()=>sendAI();$('aiInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI()}});document.querySelectorAll('.aiQuick').forEach(b=>b.onclick=()=>{showView('ai');sendAI(b.dataset.prompt)});
@@ -2034,7 +2128,7 @@ function renderObLoad(){obState.minutes=Math.max(15,Math.min(600,Number($('obMin
 function renderObDate(){const d=obState.examDate?new Date(obState.examDate+'T12:00:00'):null;const now=new Date();const days=d?Math.max(0,Math.ceil((d-now)/86400000)):null;const box=$('obDatePreview');box.innerHTML=`<div class="recommend"><span>fecha</span><strong>${d?d.toLocaleDateString('es-MX',{day:'2-digit',month:'short'}):'—'}</strong></div><div class="recommend"><span>tiempo</span><strong>${days!==null?days+' días':'por definir'}</strong></div><div class="recommend"><span>carga</span><strong>${days!==null?(days>120?'progresiva':days>60?'constante':'intensa'):'adaptativa'}</strong></div>`}
 function renderObSummary(){const learns=[...obState.learning].map(x=>({preguntas:'Preguntas',teoria:'Teoría breve',flashcards:'Flashcards',casos:'Casos clínicos'}[x]||x));$('obSummaryQ').textContent=obState.questionGoal;$('obSummaryT').textContent=obState.topicGoal;$('obSummaryM').textContent=obState.minutes+' min';$('obSummaryGoal').textContent=obState.targetSpecialty||'Preparación ENARM';$('obSummaryLearn').textContent=learns.join(', ');$('obSummaryFocus').textContent=obState.focusMode==='curso'?'Curso':obState.focusMode==='prioridades'?'Tus prioridades':obState.focusMode==='mixto'?'Mixto':'Errores';$('obSummaryTone').textContent=obState.tone;$('obSummaryFile').textContent=obState.calendarFile?.name||'No subido';$('obSummaryText').textContent=`Tienes ${obState.minutes} minutos por día y quieres hacer ${obState.questionGoal} preguntas y tocar ${obState.topicGoal} tema${obState.topicGoal>1?'s':''}. NOURA | ENARM ajustará la misión según lo que vas contestando.`}
 function startOnboarding(){obStep=0;bindObChoices();showObStep(0);renderObLoad();renderObDate()}
-async function finishOnboarding(){const file=obState.calendarFile;let calendarPath=null;if(file){const clean=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');calendarPath=`${currentUser.id}/${Date.now()}-${clean}`;const {error}=await db.storage.from('course-calendars').upload(calendarPath,file,{upsert:true,contentType:file.type||undefined});if(error)return toast('No pude subir el calendario: '+error.message)}const patch={onboarding_completed:true,exam_date:obState.examDate||null,target_specialty:obState.targetSpecialty||null,communication_style:obState.tone,preferred_name:obState.preferredName||null,preferred_address:obState.preferredAddress,daily_goal:obState.questionGoal,topic_goal:obState.topicGoal,available_minutes:obState.minutes,days_per_week:obState.days,preferred_study_time:obState.time,learning_preferences:[...obState.learning],focus_topics:(obState.focusTopics||'').split(',').map(s=>s.trim()).filter(Boolean),focus_mode:obState.focusMode,current_level:obState.currentLevel,course_calendar_name:file?.name||null,course_calendar_path:calendarPath,updated_at:new Date().toISOString()};const {data,error}=await db.from('profiles').update(patch).eq('id',currentUser.id).select().single();if(error){toast(error.message);return}profile=data;$('onboardingView').classList.add('hidden');$('appView').classList.remove('hidden');await loadDashboard();toast('Tu NOURA | ENARM quedó configurada ✦')}
+async function finishOnboarding(){const file=obState.calendarFile;let calendarPath=null;if(file){const clean=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');calendarPath=`${currentUser.id}/${Date.now()}-${clean}`;const {error}=await db.storage.from('course-calendars').upload(calendarPath,file,{upsert:true,contentType:file.type||undefined});if(error)return toast('No pude subir el calendario: '+error.message)}const patch={onboarding_completed:true,exam_date:obState.examDate||null,target_specialty:obState.targetSpecialty||null,communication_style:obState.tone,preferred_name:obState.preferredName||null,preferred_address:obState.preferredAddress,daily_goal:obState.questionGoal,topic_goal:obState.topicGoal,available_minutes:obState.minutes,days_per_week:obState.days,preferred_study_time:obState.time,learning_preferences:[...obState.learning],focus_topics:(obState.focusTopics||'').split(',').map(s=>s.trim()).filter(Boolean),focus_mode:obState.focusMode,current_level:obState.currentLevel,course_calendar_name:file?.name||null,course_calendar_path:calendarPath,updated_at:new Date().toISOString()};const {data,error}=await db.from('profiles').update(patch).eq('id',currentUser.id).select().single();if(error){toast(error.message);return}profile=data;$('onboardingView').classList.add('hidden');$('appView').classList.remove('hidden');await loadDashboard();toast('Tu NOURA | ENARM quedó configurada ✦');if(file&&calendarPath)await analyzeCourseCalendar(calendarPath,file)}
 $('obBack').onclick=()=>showObStep(obStep-1);$('obSkip').onclick=()=>{showObStep(7)};$('obNext').onclick=()=>{if(obStep<7){if(obStep===1){obState.examDate=$('obExamDate').value;obState.targetSpecialty=$('obTargetSpecialty').value;obState.currentLevel=$('obCurrentLevel').value}if(obStep===2){obState.minutes=Math.max(15,Number($('obMinutes').value||90));obState.days=Number($('obDays').value||6);obState.time=document.querySelector('#obTimeChoices .choice.active')?.dataset.time||'mañana'}if(obStep===3){obState.questionGoal=Math.max(5,Number($('obQuestionGoal').value||30));obState.topicGoal=Number($('obTopicGoal').value||1)}if(obStep===5){obState.focusTopics=$('obFocusTopics').value;obState.focusMode=$('obFocusMode').value}showObStep(obStep+1)}else finishOnboarding()};$('obDays').addEventListener('change',()=>obState.days=Number($('obDays').value||6));
 
 // Visor modal para ampliar imágenes de la biblioteca.
