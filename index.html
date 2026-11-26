@@ -1288,6 +1288,20 @@ async function loadReview(){
       .in('attempt_id',attemptIds)
       .order('answered_at',{ascending:true});
     if(answerErr)throw answerErr;
+    // Recupera la opción correcta mediante el RPC seguro de revisión; no consulta ni expone la tabla privada de claves.
+    const correctAnswerByQuestion=new Map();
+    const reviewResults=await Promise.all((attempts||[]).map(async attempt=>{
+      const {data,error}=await db.rpc('noura_get_attempt_review',{p_attempt_id:attempt.id});
+      if(error){console.warn('No se pudo recuperar la respuesta correcta del intento:',attempt.id,error);return [];}
+      return Array.isArray(data)?data:[];
+    }));
+    for(const reviewed of reviewResults){
+      for(const item of reviewed){
+        const correctOption=(item.options||[]).find(option=>option.is_correct===true);
+        const questionId=item.question_id||item.questionId;
+        if(questionId&&correctOption?.option_text)correctAnswerByQuestion.set(questionId,correctOption.option_text);
+      }
+    }
     if(!answers?.length){
       ['reviewErrorCount','reviewTotalErrors','reviewRecovering','reviewMastered'].forEach(id=>$(id).textContent='0');
       host.innerHTML='<div class="card empty">Tus simuladores todavía no tienen respuestas registradas.</div>';
@@ -1347,7 +1361,7 @@ async function loadReview(){
           </div>
           <div style="border-top:1px solid var(--line);padding-top:12px">
             <div style="font-size:16px;font-weight:650;color:#956B43;margin-bottom:7px">A repasar</div>
-            ${q.explanation?`<div style="color:#171717;font-size:14px;line-height:1.65;white-space:pre-wrap">${esc(q.explanation)}</div>`:'<div style="color:#555;font-size:13px">No hay una explicación registrada para esta pregunta.</div>'}
+            ${correctAnswerByQuestion.get(q.id)?`<div style="color:#171717;font-size:14px;line-height:1.65;white-space:pre-wrap">${esc(correctAnswerByQuestion.get(q.id))}</div>`:'<div style="color:#555;font-size:13px">No se pudo recuperar el texto de la respuesta correcta para esta pregunta.</div>'}
             ${q.pearl?`<div style="margin-top:13px;padding:12px;background:#FBF7EF;border-radius:10px"><div style="color:#B68A3A;font-weight:650;font-size:13px;margin-bottom:5px">✦ Perla ENARM</div><div style="color:#171717;font-size:13px;line-height:1.55">${esc(q.pearl)}</div></div>`:''}
           </div>
         </article>`;
@@ -2057,3 +2071,4 @@ db.auth.onAuthStateChange((event,session)=>{
 </script>
 </body>
 </html>
+
