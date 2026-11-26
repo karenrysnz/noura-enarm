@@ -1361,7 +1361,7 @@ async function loadReview(){
           </div>
           <div style="border-top:1px solid var(--line);padding-top:12px">
             <div style="font-size:16px;font-weight:650;color:#956B43;margin-bottom:7px">A repasar</div>
-            ${correctAnswerByQuestion.get(q.id)?`<div style="color:#171717;font-size:14px;line-height:1.65;white-space:pre-wrap">${esc(correctAnswerByQuestion.get(q.id))}</div>`:'<div style="color:#555;font-size:13px">No se pudo recuperar el texto de la respuesta correcta para esta pregunta.</div>'}
+            ${(()=>{const prompts=String(q.stem||'').match(/¿[^¿?]*\?/g)||[];const prompt=prompts.length?prompts[prompts.length-1].trim():'';const answer=correctAnswerByQuestion.get(q.id);return answer?`${prompt?`<div style="color:#171717;font-size:14px;font-weight:600;line-height:1.6;margin-bottom:5px">${esc(prompt)}</div>`:''}<div style="color:#171717;font-size:14px;line-height:1.65;white-space:pre-wrap">${esc(answer)}</div>`:'<div style="color:#555;font-size:13px">No se pudo recuperar el texto de la respuesta correcta para esta pregunta.</div>';})()}
             ${q.pearl?`<div style="margin-top:13px;padding:12px;background:#FBF7EF;border-radius:10px"><div style="color:#B68A3A;font-weight:650;font-size:13px;margin-bottom:5px">✦ Perla ENARM</div><div style="color:#171717;font-size:13px;line-height:1.55">${esc(q.pearl)}</div></div>`:''}
           </div>
         </article>`;
@@ -2071,4 +2071,3 @@ db.auth.onAuthStateChange((event,session)=>{
 </script>
 </body>
 </html>
-
