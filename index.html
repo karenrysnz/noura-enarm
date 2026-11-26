@@ -661,7 +661,19 @@ z-index: 20;
 </section>
 
 <section id="reviewView" class="hidden">
-  <div class="section-head"><div><h2>Repaso inteligente</h2><p>Tus respuestas incorrectas se convierten en una cola de repaso.</p></div><button class="btn secondary" data-view="questions">Hacer preguntas →</button></div>
+  <div class="section-head"><div><h2>Repaso inteligente</h2><p>Tu historial real de simuladores convertido en prioridades de aprendizaje.</p></div><button class="btn secondary" data-view="questions">Hacer simulador →</button></div>
+  <div class="grid stats" style="margin-top:0">
+    <div class="card stat"><div class="label">Preguntas con errores</div><div class="num" id="reviewErrorCount">—</div></div>
+    <div class="card stat"><div class="label">Errores acumulados</div><div class="num" id="reviewTotalErrors">—</div></div>
+    <div class="card stat"><div class="label">En recuperación</div><div class="num" id="reviewRecovering">—</div></div>
+    <div class="card stat"><div class="label">Dominadas</div><div class="num" id="reviewMastered">—</div></div>
+  </div>
+  <div class="card" style="margin:18px 0">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div><h3 class="title" style="font-size:24px;margin:0 0 5px">Tu cola de aprendizaje</h3><p class="subtle" style="margin:0">Se conserva el historial de cada simulador. Una respuesta correcta no borra tus errores anteriores.</p></div>
+      <select id="reviewFilter" aria-label="Filtrar preguntas de repaso" style="border:1px solid var(--line);border-radius:11px;padding:10px;background:#fff"><option value="all">Todas las preguntas</option><option value="priority">Errores recurrentes</option><option value="recovering">En recuperación</option><option value="mastered">Dominadas</option></select>
+    </div>
+  </div>
   <div id="reviewList" class="grid"></div>
 </section>
 
@@ -1255,7 +1267,96 @@ async function finishSimulator(){
   }catch(err){console.error('Finalizar simulador:',err);toast('No se pudo calcular el resultado: '+(err.message||err));if(confirmBtn)confirmBtn.disabled=false;}
   finally{simulatorBusy=false;$('finishSimulatorBtn').disabled=false}
 }
-async function loadReview(){const {data:wrong}=await db.from('attempt_answers').select('question_id,is_correct,answered_at').eq('is_correct',false).order('answered_at',{ascending:false}).limit(12);if(!wrong?.length){$('reviewList').innerHTML='<div class="card empty">Aún no tienes errores para repasar. Sigue practicando y aquí aparecerán.</div>';return}const ids=[...new Set(wrong.map(x=>x.question_id))];const {data:qs}=await db.from('questions').select('id,stem,pearl,topic_id,topics(name,specialties(name))').in('id',ids);$('reviewList').innerHTML=(qs||[]).map(q=>`<div class="card"><div class="meta"><span class="tag">${esc(q.topics?.specialties?.name||'ENARM')}</span><span class="tag">${esc(q.topics?.name||'Tema')}</span></div><h3 class="title" style="font-size:24px;margin:8px 0">Repasa este caso</h3><p style="line-height:1.6">${esc(q.stem)}</p>${q.pearl?`<p class="mini"><strong style="color:var(--gold)">Perla ENARM:</strong> ${esc(q.pearl)}</p>`:''}</div>`).join('')}
+async function loadReview(){
+  const host=$('reviewList');
+  host.innerHTML='<div class="card empty">Analizando tu historial de simuladores…</div>';
+  try{
+    // El historial se reconstruye desde los intentos del usuario. No se modifica ni elimina ningún registro.
+    const {data:attempts,error:attemptErr}=await db.from('attempts')
+      .select('id,started_at,completed_at,mode')
+      .eq('user_id',currentUser.id)
+      .order('started_at',{ascending:true});
+    if(attemptErr)throw attemptErr;
+    const attemptIds=(attempts||[]).map(a=>a.id);
+    if(!attemptIds.length){
+      ['reviewErrorCount','reviewTotalErrors','reviewRecovering','reviewMastered'].forEach(id=>$(id).textContent='0');
+      host.innerHTML='<div class="card empty">Todavía no hay simuladores en tu historial. Cuando termines el primero, aquí aparecerá tu análisis de aprendizaje.</div>';
+      return;
+    }
+    const {data:answers,error:answerErr}=await db.from('attempt_answers')
+      .select('attempt_id,question_id,is_correct,answered_at')
+      .in('attempt_id',attemptIds)
+      .order('answered_at',{ascending:true});
+    if(answerErr)throw answerErr;
+    if(!answers?.length){
+      ['reviewErrorCount','reviewTotalErrors','reviewRecovering','reviewMastered'].forEach(id=>$(id).textContent='0');
+      host.innerHTML='<div class="card empty">Tus simuladores todavía no tienen respuestas registradas.</div>';
+      return;
+    }
+    const grouped=new Map();
+    for(const a of answers){
+      if(!grouped.has(a.question_id))grouped.set(a.question_id,[]);
+      grouped.get(a.question_id).push(a);
+    }
+    const questionIds=[...grouped.keys()];
+    const {data:qs,error:qErr}=await db.from('questions')
+      .select('id,stem,explanation,pearl,gpc_source,topic_id,topics(name,specialties(name))')
+      .in('id',questionIds);
+    if(qErr)throw qErr;
+    const qMap=new Map((qs||[]).map(q=>[q.id,q]));
+    const rows=[];
+    for(const [id,history] of grouped){
+      const q=qMap.get(id); if(!q)continue;
+      const ordered=history.slice().sort((a,b)=>new Date(a.answered_at)-new Date(b.answered_at));
+      const errors=ordered.filter(x=>x.is_correct===false).length;
+      if(!errors)continue;
+      const last=ordered[ordered.length-1];
+      const lastThree=ordered.slice(-3);
+      const mastered=lastThree.length===3&&lastThree.every(x=>x.is_correct===true);
+      const recovering=last.is_correct===true&&!mastered;
+      const consecutiveErrors=[...ordered].reverse().findIndex(x=>x.is_correct===true);
+      const currentErrorStreak=consecutiveErrors===-1?ordered.length:consecutiveErrors;
+      const priority=errors*10+currentErrorStreak*5+(last.is_correct===false?8:0);
+      rows.push({q,history:ordered,errors,last,mastered,recovering,priority});
+    }
+    rows.sort((a,b)=>b.priority-a.priority||new Date(b.last.answered_at)-new Date(a.last.answered_at));
+    const totalErrors=rows.reduce((n,r)=>n+r.errors,0);
+    $('reviewErrorCount').textContent=rows.length;
+    $('reviewTotalErrors').textContent=totalErrors;
+    $('reviewRecovering').textContent=rows.filter(r=>r.recovering).length;
+    $('reviewMastered').textContent=rows.filter(r=>r.mastered).length;
+    const filter=$('reviewFilter');
+    const render=()=>{
+      const mode=filter?.value||'all';
+      const visible=rows.filter(r=>mode==='priority'?r.errors>=2:mode==='recovering'?r.recovering:mode==='mastered'?r.mastered:true);
+      if(!visible.length){host.innerHTML='<div class="card empty">No hay preguntas en esta categoría todavía. Sigue contestando simuladores; tu progreso se actualizará aquí.</div>';return;}
+      host.innerHTML=visible.map((r,i)=>{
+        const q=r.q,topic=q.topics?.name||'Tema sin clasificar',spec=q.topics?.specialties?.name||'ENARM';
+        const state=r.mastered?'Dominada':r.recovering?'En recuperación':r.last.is_correct===false?'Prioridad de repaso':'Historial de error';
+        const stateColor=r.mastered?'var(--green)':r.recovering?'#a77a16':'var(--red)';
+        const historyText=r.history.map(x=>x.is_correct?'✓':'✕').join(' ');
+        return `<article class="card" style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+            <div class="meta"><span class="tag">${esc(spec)}</span><span class="tag">${esc(topic)}</span></div>
+            <strong style="color:${stateColor};font-size:12px">${state}</strong>
+          </div>
+          <div class="mini" style="margin:5px 0 10px">Errores: <strong>${r.errors}</strong> · Intentos registrados: <strong>${r.history.length}</strong> · Historial: <strong>${historyText}</strong></div>
+          <h3 class="title" style="font-size:22px;margin:8px 0">Pregunta de repaso</h3>
+          <p style="line-height:1.65;white-space:pre-wrap">${esc(q.stem)}</p>
+          ${q.explanation?`<div class="feedback"><div class="review-explanation-label">Explicación</div><div class="explain">${esc(q.explanation)}</div></div>`:''}
+          ${q.pearl?`<p class="mini" style="margin-top:13px"><strong style="color:var(--gold)">✦ Perla ENARM:</strong> ${esc(q.pearl)}</p>`:''}
+          ${q.gpc_source?`<p class="mini"><strong>Fuente:</strong> ${esc(q.gpc_source)}</p>`:''}
+          <div class="mini" style="margin-top:10px">Última respuesta: ${new Date(r.last.answered_at).toLocaleString('es-MX')}</div>
+        </article>`;
+      }).join('');
+    };
+    if(filter&&!filter.dataset.bound){filter.addEventListener('change',render);filter.dataset.bound='1';}
+    render();
+  }catch(err){
+    console.error('Repaso inteligente:',err);
+    host.innerHTML=`<div class="card empty">No se pudo cargar tu historial de repaso: ${esc(err.message||err)}. Tu historial de simuladores no fue modificado.</div>`;
+  }
+}
 
 
 // Flashcards: materiales y favoritos sincronizados con Supabase.
