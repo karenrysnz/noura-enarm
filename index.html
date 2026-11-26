@@ -662,11 +662,11 @@ z-index: 20;
 
 <section id="reviewView" class="hidden">
   <div class="section-head"><div><h2>Repaso inteligente</h2><p>Tu historial real de simuladores convertido en prioridades de aprendizaje.</p></div><button class="btn secondary" data-view="questions">Hacer simulador →</button></div>
-  <div class="grid stats" style="margin-top:0">
-    <div class="card stat"><div class="label">Preguntas con errores</div><div class="num" id="reviewErrorCount">—</div></div>
-    <div class="card stat"><div class="label">Errores acumulados</div><div class="num" id="reviewTotalErrors">—</div></div>
-    <div class="card stat"><div class="label">En recuperación</div><div class="num" id="reviewRecovering">—</div></div>
-    <div class="card stat"><div class="label">Dominadas</div><div class="num" id="reviewMastered">—</div></div>
+  <div class="grid stats" style="margin-top:0;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+    <div class="card stat" style="background:#F5EFE8;border:1px solid #E9DED2;box-shadow:none"><div class="label" style="color:#171717">Preguntas con errores</div><div class="num" id="reviewErrorCount" style="color:#956B43">—</div></div>
+    <div class="card stat" style="background:#FBEDEC;border:1px solid #F2DAD8;box-shadow:none"><div class="label" style="color:#171717">Errores acumulados</div><div class="num" id="reviewTotalErrors" style="color:#C43D36">—</div></div>
+    <div class="card stat" style="background:#FFF6D9;border:1px solid #F0E4BD;box-shadow:none"><div class="label" style="color:#171717">En recuperación</div><div class="num" id="reviewRecovering" style="color:#B68A24">—</div><div style="border-top:1px solid #EADFBF;margin-top:8px;padding-top:8px;color:#171717;font-size:12px;line-height:1.45">Preguntas que antes fallaste y que ya respondiste correctamente en tu intento más reciente.</div></div>
+    <div class="card stat" style="background:#EAF3E9;border:1px solid #D4E3D2;box-shadow:none"><div class="label" style="color:#171717">Dominadas</div><div class="num" id="reviewMastered" style="color:#56845A">—</div><div style="border-top:1px solid #D4E3D2;margin-top:8px;padding-top:8px;color:#171717;font-size:12px;line-height:1.45">Preguntas que has contestado correctamente en tres intentos consecutivos después de haberlas fallado.</div></div>
   </div>
   <div class="card" style="margin:18px 0">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
@@ -1332,21 +1332,24 @@ async function loadReview(){
       if(!visible.length){host.innerHTML='<div class="card empty">No hay preguntas en esta categoría todavía. Sigue contestando simuladores; tu progreso se actualizará aquí.</div>';return;}
       host.innerHTML=visible.map((r,i)=>{
         const q=r.q,topic=q.topics?.name||'Tema sin clasificar',spec=q.topics?.specialties?.name||'ENARM';
-        const state=r.mastered?'Dominada':r.recovering?'En recuperación':r.last.is_correct===false?'Prioridad de repaso':'Historial de error';
-        const stateColor=r.mastered?'var(--green)':r.recovering?'#a77a16':'var(--red)';
-        const historyText=r.history.map(x=>x.is_correct?'✓':'✕').join(' ');
+        const state=r.mastered?'Dominadas':r.recovering?'En recuperación':'Con errores';
+        const stateStyle=r.mastered?'background:#EAF3E9;color:#56845A;border:1px solid #D4E3D2':r.recovering?'background:#FFF6D9;color:#9A741A;border:1px solid #F0E4BD':'background:#FBEDEC;color:#C43D36;border:1px solid #F2DAD8';
         return `<article class="card" style="margin-bottom:12px">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
-            <div class="meta"><span class="tag">${esc(spec)}</span><span class="tag">${esc(topic)}</span></div>
-            <strong style="color:${stateColor};font-size:12px">${state}</strong>
+            <strong style="font-size:14px;color:var(--text)">${esc(spec)}</strong>
+            <span style="${stateStyle};font-size:12px;font-weight:600;padding:5px 9px;border-radius:999px">${state}</span>
           </div>
-          <div class="mini" style="margin:5px 0 10px">Errores: <strong>${r.errors}</strong> · Intentos registrados: <strong>${r.history.length}</strong> · Historial: <strong>${historyText}</strong></div>
-          <h3 class="title" style="font-size:22px;margin:8px 0">Pregunta de repaso</h3>
-          <p style="line-height:1.65;white-space:pre-wrap">${esc(q.stem)}</p>
-          ${q.explanation?`<div class="feedback"><div class="review-explanation-label">Explicación</div><div class="explain">${esc(q.explanation)}</div></div>`:''}
-          ${q.pearl?`<p class="mini" style="margin-top:13px"><strong style="color:var(--gold)">✦ Perla ENARM:</strong> ${esc(q.pearl)}</p>`:''}
-          ${q.gpc_source?`<p class="mini"><strong>Fuente:</strong> ${esc(q.gpc_source)}</p>`:''}
-          <div class="mini" style="margin-top:10px">Última respuesta: ${new Date(r.last.answered_at).toLocaleString('es-MX')}</div>
+          <div style="margin:8px 0 5px;color:#171717;font-size:14px"><strong style="font-weight:600">Tema:</strong> ${esc(topic)}</div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;margin-bottom:12px">
+            <span style="font-weight:600;color:#171717">Intentos registrados: ${r.history.length}</span>
+            <span style="color:#888">·</span>
+            <span style="font-weight:600;color:#171717">Errores cometidos: <strong style="color:#C43D36;font-weight:600">${r.errors}</strong></span>
+          </div>
+          <div style="border-top:1px solid var(--line);padding-top:12px">
+            <div style="font-size:16px;font-weight:650;color:#956B43;margin-bottom:7px">A repasar</div>
+            ${q.explanation?`<div style="color:#171717;font-size:14px;line-height:1.65;white-space:pre-wrap">${esc(q.explanation)}</div>`:'<div style="color:#555;font-size:13px">No hay una explicación registrada para esta pregunta.</div>'}
+            ${q.pearl?`<div style="margin-top:13px;padding:12px;background:#FBF7EF;border-radius:10px"><div style="color:#B68A3A;font-weight:650;font-size:13px;margin-bottom:5px">✦ Perla ENARM</div><div style="color:#171717;font-size:13px;line-height:1.55">${esc(q.pearl)}</div></div>`:''}
+          </div>
         </article>`;
       }).join('');
     };
